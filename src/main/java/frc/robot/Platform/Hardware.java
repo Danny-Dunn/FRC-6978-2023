@@ -69,6 +69,9 @@ public class Hardware {
         liftMotor.config_kP(0, Constants.Arm.lift_kP);
         liftMotor.config_kI(0, Constants.Arm.lift_kI);
         liftMotor.config_kD(0, Constants.Arm.lift_kD);
+
+        armCableMotor.setInverted(true);
+
         armSlideMotor.config_kP(0, Constants.Arm.slide_kP);
         armSlideMotor.config_kI(0, Constants.Arm.slide_kI);
         armSlideMotor.config_kD(0, Constants.Arm.slide_kD);
