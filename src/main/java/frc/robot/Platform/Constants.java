@@ -14,7 +14,10 @@ public class Constants {
     }
     
     static class Arm {
-        static double maxExtension = 19000;
+        static double slideMaxExtension = 19000;
+        static double slide_kP = 0.0;
+        static double slide_kI = 0.0;
+        static double slide_kD = 0.0;
         
         static double liftStartingPosition = 0;
         //TODO: fix lift PID parameters
