@@ -222,6 +222,10 @@ public class Robot extends TimedRobot {
     if(driveStick.getRawButtonPressed(13)){
       manualMode = !manualMode;
     }
+
+    SmartDashboard.putNumber("LeftDriveVEL", leftDrive1.getSelectedSensorVelocity());
+    SmartDashboard.putNumber("RightDriveVEL", rightDrive1.getSelectedSensorVelocity());
+
     //SmartDashboard.putNumber("ArmP", 0);
 
   }
@@ -351,8 +355,6 @@ public class Robot extends TimedRobot {
         //setBrakeMode();
       }
 
-      SmartDashboard.putNumber("LeftDriveVEL", leftDrive1.getSelectedSensorVelocity());
-      SmartDashboard.putNumber("RightDriveVEL", rightDrive1.getSelectedSensorVelocity());
     }
 
     //if(driveStick.getRawButtonPressed(10)){
@@ -725,6 +727,10 @@ public class Robot extends TimedRobot {
       leftDrive1.set(ControlMode.Velocity, (y + x)*goal );
       rightDrive1.set(ControlMode.Velocity, (y - x)*goal);
     }
+
+    SmartDashboard.putNumber("LeftDriveTargetVelocity", (y + x)*goal);
+    SmartDashboard.putNumber("RightDriveTargetVelocity", (y - x)*goal);
+
     
   }
   public void shooter(){
