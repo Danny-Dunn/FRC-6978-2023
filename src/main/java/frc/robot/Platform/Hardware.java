@@ -52,9 +52,9 @@ public class Hardware {
         leftDrive1.config_kI(0, Constants.Drive.kI);
         leftDrive1.config_kD(0, Constants.Drive.kD);
 
-        rightDrive1.config_kP(0, 0.01);
-        rightDrive1.config_kI(0, 0.0003);
-        rightDrive1.config_kD(0, 1);
+        rightDrive1.config_kP(0, Constants.Drive.kP);
+        rightDrive1.config_kI(0, Constants.Drive.kI);
+        rightDrive1.config_kD(0, Constants.Drive.kD);
 
         leftDrive1.setNeutralMode(NeutralMode.Coast);
         leftDrive2.setNeutralMode(NeutralMode.Coast);
