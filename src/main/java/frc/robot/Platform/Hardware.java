@@ -22,7 +22,7 @@ public class Hardware {
     public static TalonFX rightDrive2 = new TalonFX(4);
 
     //Aft lift mechanism
-    public static TalonFX liftMotor = new TalonFX(5);
+    public static TalonFX armLiftMotor = new TalonFX(5);
     //Fwd cable lift
     public static TalonFX armCableMotor = new TalonFX(50);
     //Arm extension/retraction mechanism
@@ -42,8 +42,8 @@ public class Hardware {
 
     public static void configureHardware() {
         //Drive motors
-        rightDrive1.setInverted(true);
-        rightDrive2.setInverted(true);
+        leftDrive1.setInverted(true);
+        leftDrive2.setInverted(true);
 
         leftDrive2.set(ControlMode.Follower, 1);
         rightDrive2.set(ControlMode.Follower, 3);
@@ -65,15 +65,34 @@ public class Hardware {
         rightDrive1.configClosedLoopPeakOutput(0, 1);
 
         //Arm motors
-        
-        liftMotor.config_kP(0, Constants.Arm.lift_kP);
-        liftMotor.config_kI(0, Constants.Arm.lift_kI);
-        liftMotor.config_kD(0, Constants.Arm.lift_kD);
+
+        armLiftMotor.setSelectedSensorPosition(Constants.Arm.liftStartingPosition);
+
+        armLiftMotor.config_kP(0, Constants.Arm.lift_kP);
+        armLiftMotor.config_kI(0, Constants.Arm.lift_kI);
+        armLiftMotor.config_kD(0, Constants.Arm.lift_kD);
 
         armCableMotor.setInverted(true);
+        armCableMotor.setSelectedSensorPosition(Constants.Arm.cableStartingPosition);
+
+        armCableMotor.config_kP(0, Constants.Arm.cable_kP);
+        armCableMotor.config_kI(0, Constants.Arm.cable_kI);
+        armCableMotor.config_kD(0, Constants.Arm.cable_kD);
+
+        armSlideMotor.setInverted(true);
+        armSlideMotor.setSensorPhase(true);
+        armSlideMotor.setSelectedSensorPosition(Constants.Arm.slideStartingPosition);
 
         armSlideMotor.config_kP(0, Constants.Arm.slide_kP);
         armSlideMotor.config_kI(0, Constants.Arm.slide_kI);
         armSlideMotor.config_kD(0, Constants.Arm.slide_kD);
+
+        //Pneumatics
+
+        driveGearShiftSolenoid.set(Constants.Drive.gearShiftDefaultState);
+        gripperSolenoid.set(Constants.Arm.gripperCloseDefaultState);
+
+        //other
+        navX.calibrate();
     }
 }
