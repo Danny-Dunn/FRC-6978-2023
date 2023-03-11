@@ -87,9 +87,13 @@ public class Robot extends TimedRobot {
     //cone placement mid
     //cube placement high
     //cone placement high
-  double[] armRotatePositions = {0, 271000, 368000, 368000, 400000};
+  /*double[] armRotatePositions = {0, 271000, 368000, 368000, 400000};
   double[] armLiftPositions = {0, -290000, -474000, -474000, -500000};
-  double[] armSlidePositions = {0, 9700, 9000, 19000, 19000};
+  double[] armSlidePositions = {0, 9700, 9000, 19000, 19000};*/
+
+  double[] armRotatePositions = {0, 226174, 316000, 370000, 402000};
+  double[] armLiftPositions = {0, -531184, -531000, -358000, -358000};
+  double[] armSlidePositions = {0, 0, 8451, 17000, 19900};
 
   int armAutoPosition = 0;
 
@@ -124,12 +128,13 @@ public class Robot extends TimedRobot {
     //testMotor = new TalonSRX(24); //this was on the comp bot for the rotating arm
     armMotor = new TalonSRX(11);
     armMotor.setInverted(true);
-    armMotor.setSensorPhase(true);
+    armMotor.setSensorPhase(false);
 
     armRotator = new TalonFX(50);
     armRotator.setInverted(true);
 
     armWheels = new TalonSRX(24);
+    armWheels.setInverted(true); //NEEDS TO BE CHANGED ON PRACTICE BOT
 
     rightDrive1.setInverted(true);
     rightDrive2.setInverted(true);
@@ -227,6 +232,8 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Arm length applied", armMotor.getMotorOutputPercent());
 
     SmartDashboard.putNumber("Arm Rotation Position", armRotator.getSelectedSensorPosition()); //400,000 to 0
+    
+    //SmartDashboard.putNumber("Arm Rot POS", armRotator.getSelectedSensorPosition());
     SmartDashboard.putNumber("Lift Position", liftMotor.getSelectedSensorPosition()); //-800,000 to 0
 
     SmartDashboard.putNumber("Arm PID GOAL", armSlideGoal);
@@ -471,18 +478,22 @@ public class Robot extends TimedRobot {
     } 
     else{
       liftMotor.set(ControlMode.PercentOutput, 0);
-    }*/
-
+      }*/
+      /*
     if(driveStick.getRawButtonPressed(9) || driveStick.getRawButtonPressed(10)){
       //set the flags for the amp code
       zeroCompleted = false;
+    }*/
+
+    if (operatorStick.getRawButtonReleased(10)){
+      armMotor.setSelectedSensorPosition(0);
+      armRotator.setSelectedSensorPosition(0);
+      liftMotor.setSelectedSensorPosition(0);
     }
 
     if (manualMode){
-
-      armRotator.set(ControlMode.PercentOutput, -operatorStick.getRawAxis(1));
       
-      if (operatorStick.getRawButton(6)){
+      /*if (operatorStick.getRawButton(6)){
         armSlideGoal = 9700;
       }
       else if (operatorStick.getRawButton(8)){
@@ -490,6 +501,12 @@ public class Robot extends TimedRobot {
       }
       else if (operatorStick.getRawButton(5)){
         armSlideGoal = 0;
+      }*/
+      if (operatorStick.getRawButton(6)){
+        armMotor.set(ControlMode.PercentOutput, 0.4);
+      }
+      else if (operatorStick.getRawButton(5)){
+        armMotor.set(ControlMode.PercentOutput, -0.4);
       }
       else if (operatorStick.getRawButton(10)){
         armMotor.set(ControlMode.PercentOutput, -0.4);
@@ -499,15 +516,12 @@ public class Robot extends TimedRobot {
         armMotor.set(ControlMode.PercentOutput, 0);
       }
       
-      if (operatorStick.getRawButtonReleased(10)){
-        armMotor.setSelectedSensorPosition(0);
-        armRotator.setSelectedSensorPosition(0);
-        liftMotor.setSelectedSensorPosition(0);
-      }
-      SmartDashboard.putNumber("Arm Rot POS", armRotator.getSelectedSensorPosition());
+      
 
       liftMotor.set(ControlMode.PercentOutput, 0);
       liftMotor.set(ControlMode.PercentOutput, -operatorStick.getRawAxis(3));
+
+      armRotator.set(ControlMode.PercentOutput, -operatorStick.getRawAxis(1));
       //auto arm stuff
 
 
@@ -534,7 +548,7 @@ public class Robot extends TimedRobot {
 
       //armMotor.set(ControlMode.Position, armSlidePositions[armAutoPosition]);
       //double armSlideGoalFixed = 
-      //armPID(armSlidePositions[armAutoPosition]);
+      armPID(armSlidePositions[armAutoPosition]);
       liftMotor.set(ControlMode.Position, armLiftPositions[armAutoPosition]);
       armRotator.set(ControlMode.Position, armRotatePositions[armAutoPosition]);
 
@@ -556,6 +570,7 @@ public class Robot extends TimedRobot {
     rightDrive1.set(ControlMode.Velocity, output);
   }
 
+  //FIXME: use internal motor PID
   public void armPID(double Goal){
     double error = Goal - armMotor.getSelectedSensorPosition();
     double p = 0.00025;
