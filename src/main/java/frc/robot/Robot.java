@@ -246,7 +246,7 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putBoolean("ManualMode", manualMode);
     if(operatorStick.getRawButtonPressed(9)){
-      manualMode = !manualMode;
+      manualMode = !manualMode; 
     }
 
     SmartDashboard.putNumber("LeftDriveVEL", leftDrive1.getSelectedSensorVelocity());
