@@ -87,13 +87,17 @@ public class Robot extends TimedRobot {
     //cone placement mid
     //cube placement high
     //cone placement high
+    //floor pickup
+    //pickup position
   /*double[] armRotatePositions = {0, 271000, 368000, 368000, 400000};
   double[] armLiftPositions = {0, -290000, -474000, -474000, -500000};
   double[] armSlidePositions = {0, 9700, 9000, 19000, 19000};*/
+  //
+  //37149
 
-  double[] armRotatePositions = {0, 226174, 316000, 370000, 402000};
-  double[] armLiftPositions = {0, -531184, -531000, -358000, -358000};
-  double[] armSlidePositions = {0, 0, 8451, 17000, 19900};
+  double[] armRotatePositions = {0, 226174, 336000, 370000, 402000, 37149, 362000, -76753};
+  double[] armLiftPositions = {0, -531184, -531000, -358000, -358000, 0, -375000, -640000};
+  double[] armSlidePositions = {0, 0, 10051, 17000, 19900, 0, 0, 0};
 
   int armAutoPosition = 0;
 
@@ -241,12 +245,14 @@ public class Robot extends TimedRobot {
     liftGoalIncrement = SmartDashboard.getNumber("Lift PID Increment %", 10)/100;
 
     SmartDashboard.putBoolean("ManualMode", manualMode);
-    if(driveStick.getRawButtonPressed(13)){
+    if(operatorStick.getRawButtonPressed(9)){
       manualMode = !manualMode;
     }
 
     SmartDashboard.putNumber("LeftDriveVEL", leftDrive1.getSelectedSensorVelocity());
     SmartDashboard.putNumber("RightDriveVEL", rightDrive1.getSelectedSensorVelocity());
+
+    SmartDashboard.putNumber("ArmAutoPosition", armAutoPosition);
 
     //SmartDashboard.putNumber("ArmP", 0);
 
@@ -416,7 +422,7 @@ public class Robot extends TimedRobot {
     driveGearShiftSolenoid.set(driveShiftBool);
 
 
-    if(operatorStick.getRawButtonPressed(2)){
+    if(operatorStick.getRawButtonPressed(4)){
       gripperBool = !gripperBool;
     }
     gripperSolenoid.set(gripperBool);
@@ -489,6 +495,7 @@ public class Robot extends TimedRobot {
       armMotor.setSelectedSensorPosition(0);
       armRotator.setSelectedSensorPosition(0);
       liftMotor.setSelectedSensorPosition(0);
+      armAutoPosition = 0;
     }
 
     if (manualMode){
@@ -509,7 +516,7 @@ public class Robot extends TimedRobot {
         armMotor.set(ControlMode.PercentOutput, -0.4);
       }
       else if (operatorStick.getRawButton(10)){
-        armMotor.set(ControlMode.PercentOutput, -0.4);
+        armMotor.set(ControlMode.PercentOutput, -0.1);
       }
       else{
         //armPID(armSlideGoal);
@@ -521,7 +528,7 @@ public class Robot extends TimedRobot {
       liftMotor.set(ControlMode.PercentOutput, 0);
       liftMotor.set(ControlMode.PercentOutput, -operatorStick.getRawAxis(3));
 
-      armRotator.set(ControlMode.PercentOutput, -operatorStick.getRawAxis(1));
+      armRotator.set(ControlMode.PercentOutput, -Math.pow(operatorStick.getRawAxis(1), 3));
       //auto arm stuff
 
 
@@ -530,20 +537,29 @@ public class Robot extends TimedRobot {
 
 
       //arm rotation
-      if(operatorStick.getRawButton(1)){
-        armAutoPosition = 0;
-      }
-      else if(operatorStick.getRawButton(5)){
+      
+      if(operatorStick.getRawButton(5)){
         armAutoPosition = 1;
       }
-      else if(operatorStick.getRawButton(6)){
-        armAutoPosition = 2;
-      }
-      else if(operatorStick.getRawButton(7)){
-        armAutoPosition = 3;
-      }
-      else if(operatorStick.getRawButton(8)){
-        armAutoPosition = 4;
+      if(armAutoPosition == 1) {
+        if(operatorStick.getRawButton(1)){
+          armAutoPosition = 0;
+        }else if(operatorStick.getRawButton(6)){
+          armAutoPosition = 2;
+        }
+        else if(operatorStick.getRawButton(7)){
+          armAutoPosition = 3;
+        }
+        else if(operatorStick.getRawButton(8)){
+          armAutoPosition = 4;
+        }
+        else if(operatorStick.getPOV() == 180){
+          armAutoPosition = 5;
+        } else if (operatorStick.getRawButton(3)) {
+          armAutoPosition = 6;
+        } else if (operatorStick.getRawButton(2)) {
+          armAutoPosition = 7;
+        }
       }
 
       //armMotor.set(ControlMode.Position, armSlidePositions[armAutoPosition]);
@@ -576,7 +592,7 @@ public class Robot extends TimedRobot {
     double p = 0.00025;
     double output = error*p;
 
-    double max = 0.4;
+    double max = 1;
     output = output > max ? max: output;
     output = output < -max ? -max: output;
 
