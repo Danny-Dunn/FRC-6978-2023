@@ -135,7 +135,7 @@ public class Robot extends TimedRobot {
     armMotor.setSensorPhase(false);
 
     armRotator = new TalonFX(50);
-    armRotator.setInverted(true);
+    armRotator.setInverted(false);
 
     armWheels = new TalonSRX(24);
     armWheels.setInverted(true); //NEEDS TO BE CHANGED ON PRACTICE BOT
