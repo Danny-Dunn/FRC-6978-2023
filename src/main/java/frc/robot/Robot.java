@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.Joystick;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
@@ -133,6 +134,7 @@ public class Robot extends TimedRobot {
     armMotor = new TalonSRX(11);
     armMotor.setInverted(true);
     armMotor.setSensorPhase(false);
+    //armMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 10, 12, ))
 
     armRotator = new TalonFX(50);
     armRotator.setInverted(false);
@@ -515,9 +517,6 @@ public class Robot extends TimedRobot {
       else if (operatorStick.getRawButton(5)){
         armMotor.set(ControlMode.PercentOutput, -0.4);
       }
-      else if (operatorStick.getRawButton(10)){
-        armMotor.set(ControlMode.PercentOutput, -0.1);
-      }
       else{
         //armPID(armSlideGoal);
         armMotor.set(ControlMode.PercentOutput, 0);
@@ -525,7 +524,6 @@ public class Robot extends TimedRobot {
       
       
 
-      liftMotor.set(ControlMode.PercentOutput, 0);
       liftMotor.set(ControlMode.PercentOutput, -operatorStick.getRawAxis(3));
 
       armRotator.set(ControlMode.PercentOutput, -Math.pow(operatorStick.getRawAxis(1), 3));
