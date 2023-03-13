@@ -65,6 +65,12 @@ public class ArmButtons implements IPeriodicTask {
         if(Hardware.operatorStick.getRawButton(OperatorControls.coneHigh)){
             Globals.requestedArmPosition = ArmPosition.coneHigh;
         }
+
+        SmartDashboard.putString("Requested Arm Position", Globals.requestedArmPosition.toString());
+        SmartDashboard.putBoolean("constrainLiftClawPlexiglassCrash", Globals.ArmConstraints.liftClawPlexiglassCrash);
+        SmartDashboard.putBoolean("constrainLiftClawTiltCrash", Globals.ArmConstraints.liftClawTiltCrash);
+        SmartDashboard.putBoolean("constrainCableBumperClearance", Globals.ArmConstraints.cableBumperClearance);
+
     }
 
     public List<RunContext> getAllowedRunContexts() { 
