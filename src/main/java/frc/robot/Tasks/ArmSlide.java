@@ -40,6 +40,8 @@ public class ArmSlide implements IPeriodicTask {
                 Hardware.armSlideMotor.set(ControlMode.PercentOutput, 0.4);
             } else if(Hardware.operatorStick.getRawButton(Constants.OperatorControls.slideIn)) {
                 Hardware.armSlideMotor.set(ControlMode.PercentOutput, -0.4);
+            } else if(Hardware.operatorStick.getRawButton(Constants.OperatorControls.zeroArm)) {
+                Hardware.armSlideMotor.set(ControlMode.Disabled, -0.1);
             } else {
                 Hardware.armSlideMotor.set(ControlMode.Disabled, 0);
             }

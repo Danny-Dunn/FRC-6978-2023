@@ -23,6 +23,12 @@ public class ArmButtons implements IPeriodicTask {
     public void onStop() {}
 
     public void onLoop(RunContext context) {
+        if(Hardware.operatorStick.getRawButtonReleased(OperatorControls.zeroArm)) {
+            Hardware.armCableMotor.setSelectedSensorPosition(0);
+            Hardware.armLiftMotor.setSelectedSensorPosition(0);
+            Hardware.armSlideMotor.setSelectedSensorPosition(0);
+        }
+
         if(Hardware.operatorStick.getRawButtonPressed(OperatorControls.toggleArmAutomation)) {
             Globals.armAutomation = !Globals.armAutomation;
         }

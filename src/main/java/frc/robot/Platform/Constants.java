@@ -66,6 +66,8 @@ public class Constants {
 
     //FIXME: Operator controls
     public static class OperatorControls {
+        public static int zeroArm = 10;
+
         public static int toggleClaw = 2;//south
 
         public static int slideIn = 5;
