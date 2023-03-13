@@ -32,7 +32,7 @@ public class Constants {
         public static double slideParkPosition = 0;
         public static double slideMidPosition = 8000;
         public static double slideMaxExtension = 19000;
-        public static double slide_kP = 0.0;
+        public static double slide_kP = 0.25;
         public static double slide_kI = 0.0;
         public static double slide_kD = 0.0;
         
@@ -41,10 +41,9 @@ public class Constants {
         public static double liftUpperPosition = 0;
         public static double liftInsideBumperLower = -100000;
         public static double liftInsideBumperUpper = -5000;
-        //TODO: fix lift PID parameters
         public static double lift_kP = 0.02;
         public static double lift_kI = 0.0;
-        public static double lift_kD = 0.0;
+        public static double lift_kD = 10;
 
         public static double cableStartingPosition = 0;
         public static double cableBumperClearancePosition = 38000;
