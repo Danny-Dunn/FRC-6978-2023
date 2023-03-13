@@ -14,7 +14,14 @@ import frc.robot.Platform.Constants;
 import frc.robot.Platform.Hardware;
 
 public class DifferentialDrive implements IPeriodicTask{
-    int mode;
+    enum DriveMode {
+        stick,
+        balance,
+        heading,
+        distance
+    };
+    DriveMode mode;
+
     PIDController balancingYawController = new PIDController(
         Constants.Drive.balancer_yaw_kP,
         Constants.Drive.balancer_yaw_kI,
@@ -26,53 +33,52 @@ public class DifferentialDrive implements IPeriodicTask{
         Constants.Drive.balancer_pitch_kD
     );
 
-    boolean shiftState;
+    boolean gearShiftState;
     
+    public DifferentialDrive() {
+    }
+
     public void onStart(RunContext context) {
-        mode = 0;
-        shiftState = Constants.Drive.gearShiftDefaultState;
-        Hardware.driveGearShiftSolenoid.set(shiftState);
+        gearShiftState = Constants.Drive.gearShiftDefaultState;
+        Hardware.driveGearShiftSolenoid.set(gearShiftState);
+        if(context == RunContext.teleoperated) {
+            useStick();
+        }
     }
 
     public void onStop() {}
 
     public void onLoop(RunContext context) {
         if(Hardware.driverStick.getRawButtonPressed(Constants.DriverControls.gearShift)) {
-            shiftState = !shiftState;
-            Hardware.driveGearShiftSolenoid.set(shiftState);
+            setGearShift(!gearShiftState);
         }
 
         if(Hardware.driverStick.getRawButtonPressed(Constants.DriverControls.balance)) {
-            balancingYawController.init();
-            balancingPitchController.init();
-            //target perfectly flat
-            balancingPitchController.set(0);
-            ///target heading hold
-            balancingYawController.set(Hardware.navX.getAngle());
-            mode = 1;
-
-            //set brake mode 
-            setBrake(true);
+            balance();
         }
 
         if(Hardware.driverStick.getRawButtonReleased(Constants.DriverControls.balance)) {
-            mode = 0;
-            setBrake(false);
+            useStick();
         }
         
         switch (mode) {
-            case 0:
-                stickDrive();
+            case stick:
+                onStickDrive();
                 break;
-            case 1:
-                balance();
+            case balance:
+                onBalance();
                 break;
             default:
                 break;
         }
     }
 
-    void stickDrive() {
+    public void useStick() {
+        setBrake(false);
+        mode = DriveMode.stick;
+    }
+
+    void onStickDrive() {
         double x;
         double y;
 
@@ -100,11 +106,25 @@ public class DifferentialDrive implements IPeriodicTask{
         setDrives(x, y);        
     }
 
-    void balance() {
+    void onBalance() {
         setDrives(
             balancingYawController.process(Hardware.navX.getAngle()), 
             balancingPitchController.process(Hardware.navX.getPitch())
             );
+    }
+
+    public void balance() {
+        
+        balancingYawController.init();
+        balancingPitchController.init();
+        //target perfectly flat
+        balancingPitchController.set(0);
+        ///target heading hold
+        balancingYawController.set(Hardware.navX.getAngle());
+        mode = DriveMode.balance;
+
+        //set brake mode 
+        setBrake(true);
     }
 
     void setDrives(double x, double y) {
@@ -135,6 +155,11 @@ public class DifferentialDrive implements IPeriodicTask{
         Hardware.leftDrive2.setNeutralMode(neutralMode);
         Hardware.rightDrive1.setNeutralMode(neutralMode);
         Hardware.rightDrive2.setNeutralMode(neutralMode);
+    }
+
+    public void setGearShift(boolean highGear) {
+        gearShiftState = highGear;
+        Hardware.driveGearShiftSolenoid.set(highGear);
     }
 
     public List<RunContext> getAllowedRunContexts() { 

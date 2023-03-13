@@ -39,12 +39,16 @@ public class Constants {
         public static double liftStartingPosition = 0;
         public static double liftLowerPosition = -800000;
         public static double liftUpperPosition = 0;
+        public static double liftInsideBumperLower = -100000;
+        public static double liftInsideBumperUpper = -5000;
         //TODO: fix lift PID parameters
         public static double lift_kP = 0.02;
         public static double lift_kI = 0.0;
         public static double lift_kD = 0.0;
 
         public static double cableStartingPosition = 0;
+        public static double cableBumperClearancePosition = 38000;
+        public static double cableMaxPosition = 408000;
         public static double cable_kP = 0.01;
         public static double cable_kI = 0.0;
         public static double cable_kD = 0.0;
@@ -61,9 +65,26 @@ public class Constants {
         public static int balance = 11;
     }
 
+    //FIXME: Operator controls
     public static class OperatorControls {
-        public static int retractSlide = 5;
-        public static int midDeploySlide = 6;
-        public static int fullDeploySlide = 8;
+        public static int toggleClaw = 2;//south
+
+        public static int slideIn = 5;
+        public static int slideOut = 6;
+        
+        public static int cableAxis = 3;
+        public static int liftAxis = 4;
+
+        public static int toggleArmAutomation = 11; //west
+
+        //auto mode buttons
+        public static int park = 1; //west
+        public static int partialParkPOV = 180; //pov hat
+        public static int groundPickup = 3; //east
+        public static int humanPickup = 4; //north
+        public static int cubeMid = 5; //left bumper
+        public static int coneMid = 6; //right bumper
+        public static int cubeHigh = 7; //left trigger
+        public static int coneHigh = 8; //right trigger
     }
 }
