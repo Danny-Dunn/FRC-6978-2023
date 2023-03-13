@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.Joystick;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -117,6 +118,12 @@ public class Robot extends TimedRobot {
   private double liftD;
   private double liftSetpointPos;
 
+  //safety
+  double safetyTimerLift = 0;
+  boolean liftAllowedToRun = true;
+  boolean liftSafetyTriggered = false;
+  double highestAmperage = 0;
+
   //Collection<TalonFX> _fxes =  { new TalonFX(1), new TalonFX(2), new TalonFX(3) };
 
   //auto Variables
@@ -129,6 +136,20 @@ public class Robot extends TimedRobot {
     rightDrive1 = new TalonFX(3);
     rightDrive2 = new TalonFX(4);
     liftMotor = new TalonFX(5);
+
+    liftMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(
+      false,
+      0,
+      5,
+      1
+    ));
+
+    liftMotor.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(
+      false,
+      5,
+      30,
+      0.2
+    ));
 
     //testMotor = new TalonSRX(24); //this was on the comp bot for the rotating arm
     armMotor = new TalonSRX(11);
@@ -255,8 +276,24 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("RightDriveVEL", rightDrive1.getSelectedSensorVelocity());
 
     SmartDashboard.putNumber("ArmAutoPosition", armAutoPosition);
+    SmartDashboard.putNumber("Lift Current", liftMotor.getSupplyCurrent());
+    SmartDashboard.putNumber("Lift MAX Current", highestAmperage);
 
     //SmartDashboard.putNumber("ArmP", 0);
+
+    SmartDashboard.putBoolean("Lift Allowed ON:", liftAllowedToRun);
+
+    SmartDashboard.putBoolean("High Gear", driveShiftBool);
+
+    liftSafetyShutoff(0.1, 10);
+
+    if (liftMotor.getSupplyCurrent() > highestAmperage){
+      highestAmperage = liftMotor.getSupplyCurrent();
+    }
+
+    if (!liftAllowedToRun){
+      liftMotor.set(ControlMode.Disabled, 0);
+    }
 
   }
 
@@ -312,7 +349,7 @@ public class Robot extends TimedRobot {
       case 0:
         if (armRotator.getSelectedSensorPosition() < 190000){
           armRotator.set(ControlMode.Position, 200000);
-          liftMotor.set(ControlMode.Position, -40000);
+          if (liftAllowedToRun) liftMotor.set(ControlMode.Position, -40000);
           armMotor.set(ControlMode.PercentOutput, -.4);
           gripperSolenoid.set(true);
         }
@@ -364,8 +401,9 @@ public class Robot extends TimedRobot {
     brakeStatus = false;
     setBrakeMode(false);
 
-    //armMotor.setSelectedSensorPosition(0);
+    liftAllowedToRun = SmartDashboard.getBoolean("Lift Allowed ON:", false);
 
+    //armMotor.setSelectedSensorPosition(0);
 
     armRotator.setSelectedSensorPosition(0);
     armRotator.config_kP(0, 0.01);
@@ -524,7 +562,7 @@ public class Robot extends TimedRobot {
       
       
 
-      liftMotor.set(ControlMode.PercentOutput, -operatorStick.getRawAxis(3));
+      if (liftAllowedToRun) liftMotor.set(ControlMode.PercentOutput, -operatorStick.getRawAxis(3));
 
       armRotator.set(ControlMode.PercentOutput, -Math.pow(operatorStick.getRawAxis(1), 3));
       //auto arm stuff
@@ -563,7 +601,7 @@ public class Robot extends TimedRobot {
       //armMotor.set(ControlMode.Position, armSlidePositions[armAutoPosition]);
       //double armSlideGoalFixed = 
       armPID(armSlidePositions[armAutoPosition]);
-      liftMotor.set(ControlMode.Position, armLiftPositions[armAutoPosition]);
+      if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[armAutoPosition]);
       armRotator.set(ControlMode.Position, armRotatePositions[armAutoPosition]);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////// the wall
@@ -607,7 +645,7 @@ public class Robot extends TimedRobot {
     // }else if(output < maxLiftSpeedDown){
     //   output = maxLiftSpeedDown;
     // }
-    liftMotor.set(ControlMode.Position, goal);
+    if (liftAllowedToRun) liftMotor.set(ControlMode.Position, goal);
   }
   public void armRotatePID(double percentGoal){
     double goal = armMaxPosition * percentGoal/100;
@@ -773,6 +811,24 @@ public class Robot extends TimedRobot {
       armWheels.set(ControlMode.PercentOutput, -power); 
     }else{
       armWheels.set(ControlMode.PercentOutput, 0);
+    }
+  }
+
+  //safety
+  public void liftSafetyShutoff(double timeToKill, double ampToKill){
+    double amps = Math.abs(liftMotor.getSupplyCurrent());
+    if (amps > ampToKill && !liftSafetyTriggered){
+      liftSafetyTriggered = true;
+      safetyTimerLift = timer.get() + timeToKill;
+    }
+
+    if (amps < ampToKill){
+      liftSafetyTriggered = false;
+    }
+
+    if (liftSafetyTriggered && timer.get() >= safetyTimerLift){
+      //this means we should shut off
+      liftAllowedToRun = false;
     }
   }
 }
