@@ -437,8 +437,8 @@ public class Robot extends TimedRobot {
         driveShiftBool = false;
       }
       else{
-        //driveButBetter();
-        drive();
+        driveButBetter();
+        //drive();
       }
       isSticking = false;
       if (brakeStatus && !isSticking){
