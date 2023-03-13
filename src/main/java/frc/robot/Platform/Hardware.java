@@ -2,8 +2,8 @@ package frc.robot.Platform;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.can.TalonFX;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.Compressor;
@@ -16,19 +16,19 @@ public class Hardware {
     public static AHRS navX = new AHRS();
 
     //Drive Motors
-    public static TalonFX leftDrive1 = new TalonFX(1);
-    public static TalonFX leftDrive2 = new TalonFX(2);
-    public static TalonFX rightDrive1 = new TalonFX(3);
-    public static TalonFX rightDrive2 = new TalonFX(4);
+    public static WPI_TalonFX leftDrive1 = new WPI_TalonFX(1);
+    public static WPI_TalonFX leftDrive2 = new WPI_TalonFX(2);
+    public static WPI_TalonFX rightDrive1 = new WPI_TalonFX(3);
+    public static WPI_TalonFX rightDrive2 = new WPI_TalonFX(4);
 
     //Aft lift mechanism
-    public static TalonFX armLiftMotor = new TalonFX(5);
+    public static WPI_TalonFX armLiftMotor = new WPI_TalonFX(5);
     //Fwd cable lift
-    public static TalonFX armCableMotor = new TalonFX(50);
+    public static WPI_TalonFX armCableMotor = new WPI_TalonFX(50);
     //Arm extension/retraction mechanism
-    public static TalonSRX armSlideMotor = new TalonSRX(11);
+    public static WPI_TalonSRX armSlideMotor = new WPI_TalonSRX(11);
     //Gripper wheels
-    public static TalonSRX gripperWheelsMotor = new TalonSRX(24);
+    public static WPI_TalonSRX gripperWheelsMotor = new WPI_TalonSRX(24);
 
     //Pneumatics
     public static Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
