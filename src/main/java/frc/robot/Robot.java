@@ -381,14 +381,6 @@ public class Robot extends TimedRobot {
 
     
     drive();
-
-    //if(driveStick.getRawButtonPressed(10)){
-      //fastDriving = !fastDriving;
-    //}
-    ////////////////////////
-    //pneumatics 
-    /////////////
-
     
     if(driveStick.getRawButtonPressed(10)){
       driveShiftBool = !driveShiftBool;
@@ -431,39 +423,7 @@ public class Robot extends TimedRobot {
           armWheels.set(ControlMode.PercentOutput, 0);
         }
       }
-    //}if(operatorStick.getRawButton(8)){
-    //   liftPID(50); //keep in percent form, not decimal form 
-    // }else if(operatorStick.getRawButton(7)){
-    //   liftPID(0);
-    //}else{
-    //}
 
-
-     //////////////////
-     //end of pneumatics */
-     //////////////////
-
-    /*if(driveStick.getRawButtonPressed(5) && driveStick.getRawButtonPressed(6)){
-      brakeStatus = !brakeStatus;
-      setBrakeMode();
-    }*/
-
-    //lift
-    /*
-    if(driveStick.getRawButton(1)) {
-      liftMotor.set(ControlMode.Position, (int)(25000)); //pid low
-    } 
-    else if(driveStick.getRawButton(2)) {
-      liftMotor.set(ControlMode.Position, (int)(105000));//0.65*maxPosition)); //pid high
-    } 
-    else{
-      liftMotor.set(ControlMode.PercentOutput, 0);
-      }*/
-      /*
-    if(driveStick.getRawButtonPressed(9) || driveStick.getRawButtonPressed(10)){
-      //set the flags for the amp code
-      zeroCompleted = false;
-    }*/
 
     if (operatorStick.getRawButtonReleased(10)){
       armMotor.setSelectedSensorPosition(0);
@@ -471,43 +431,23 @@ public class Robot extends TimedRobot {
       liftMotor.setSelectedSensorPosition(0);
       armAutoPosition = 0;
     }
-
-    if (manualMode){
-      
-      /*if (operatorStick.getRawButton(6)){
-        armSlideGoal = 9700;
-      }
-      else if (operatorStick.getRawButton(8)){
-        armSlideGoal = 19000;
-      }
-      else if (operatorStick.getRawButton(5)){
-        armSlideGoal = 0;
-      }*/
-      if (driveStick.getRawButton(6)){
-        liftMotor.set(ControlMode.PercentOutput, 0.4);
-      }
-      else if (driveStick.getRawButton(5)){
-        liftMotor.set(ControlMode.PercentOutput, -0.4);
-      }
-      else{
-        //armPID(armSlideGoal);
-        liftMotor.set(ControlMode.PercentOutput, 0);
-      }
-      
-      
-
-      armMotor.set(ControlMode.PercentOutput, -driveStick.getRawAxis(3));
-
-      armRotator.set(ControlMode.PercentOutput, -Math.pow(driveStick.getRawAxis(2), 3));
-      //auto arm stuff
-
-
+    if (driveStick.getRawButton(6)){
+      liftMotor.set(ControlMode.PercentOutput, 0.4);
     }
-    else{ //not in manual mode
-
-////////////////////////////////////////////////////////////////////////////////////////////////// the wall
-
+    else if (driveStick.getRawButton(5)){
+      liftMotor.set(ControlMode.PercentOutput, -0.4);
     }
+    else{
+      //armPID(armSlideGoal);
+      liftMotor.set(ControlMode.PercentOutput, 0);
+    }
+    
+    
+
+    armMotor.set(ControlMode.PercentOutput, -driveStick.getRawAxis(3));
+
+    armRotator.set(ControlMode.PercentOutput, -Math.pow(driveStick.getRawAxis(2), 3));
+    //auto arm stuff
   }
 
   public void balanceRobot_DrivingBackward(){
@@ -523,73 +463,7 @@ public class Robot extends TimedRobot {
     rightDrive1.set(ControlMode.Velocity, output);
   }
 
-  //FIXME: use internal motor PID
-  public void armPID(double Goal){
-    double error = Goal - armMotor.getSelectedSensorPosition();
-    double p = 0.00025;
-    double output = error*p;
-
-    double max = 1;
-    output = output > max ? max: output;
-    output = output < -max ? -max: output;
-
-    armMotor.set(ControlMode.PercentOutput, output);
-  }
-
-  public void liftPID(double percentGoal){
-    double goal = liftMaxPosition * percentGoal/100;
-    // double error = goal - liftMotor.getSelectedSensorPosition();
-    // double liftP = 0.0001;
-    // double output = error * liftP;
-    // if(output > maxLiftSpeedUp){
-    //   output = maxLiftSpeedUp;
-    // }else if(output < maxLiftSpeedDown){
-    //   output = maxLiftSpeedDown;
-    // }
-    liftMotor.set(ControlMode.Position, goal);
-  }
-  public void armRotatePID(double percentGoal){
-    double goal = armMaxPosition * percentGoal/100;
-    
-    armRotator.set(ControlMode.Position, goal);
-  }
-
-
-  public void zeroArm(boolean findingMin){
-    if (Math.abs(armMotor.getStatorCurrent()) > zeroSettingAmperage){
-      if (zeroSettingBOOL == false){
-        zeroSettingTimeFlag = timer.get() + zeroSettingTime;
-      }
-      zeroSettingBOOL = true;
-    }
-    else{
-      zeroSettingTimeFlag = Double.MAX_VALUE;
-      zeroSettingBOOL = false;
-    }
-    if (zeroSettingBOOL){
-      if (timer.get() > zeroSettingTimeFlag){
-        zeroCompleted = true;
-        if (findingMin){
-          armMotor.setSelectedSensorPosition(0);
-        }
-        else{
-          armMax = armMotor.getSelectedSensorPosition();
-        }
-      }
-    }
-    if (!zeroCompleted){
-      if (findingMin){
-        armMotor.set(ControlMode.PercentOutput,-0.2);
-      }
-      else{
-        armMotor.set(ControlMode.PercentOutput, 0.2);
-      }
-    }
-    else{
-      armMotor.set(ControlMode.PercentOutput,0);
-    }
-  }
-
+ 
   public void setBrakeMode(boolean setMe){
     if (setMe == true){
       leftDrive1.setNeutralMode(NeutralMode.Brake);
