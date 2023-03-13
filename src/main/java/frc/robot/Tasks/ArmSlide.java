@@ -11,6 +11,7 @@ import frc.robot.Framework.RunContext;
 import frc.robot.Platform.Constants;
 import frc.robot.Platform.Globals;
 import frc.robot.Platform.Hardware;
+import frc.robot.Platform.Tasks;
 
 public class ArmSlide implements IPeriodicTask {
     double target;
@@ -67,6 +68,17 @@ public class ArmSlide implements IPeriodicTask {
 
         double minimum = Constants.Arm.slideParkPosition;
         double maximum = Constants.Arm.slideMaxExtension;
+
+        if( //inside bumper
+            (
+                Tasks.armLift.getPosition() > Constants.Arm.liftInsideBumperLower &&
+                Tasks.armCable.getPosition() < Constants.Arm.cableBumperClearancePosition
+            ) || (
+                Globals.ArmConstraints.cableBumperClearance
+            )
+        ) {
+            maximum = 0;
+        }
 
         position = (position > maximum)? maximum:position;
         position = (position < minimum)? minimum:position;
