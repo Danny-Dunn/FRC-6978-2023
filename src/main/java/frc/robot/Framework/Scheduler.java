@@ -24,8 +24,8 @@ public class Scheduler {
     public void clear() {
         for (IPeriodicTask task : tasks) {
             task.onStop();
-            tasks.remove(task);
         }
+        tasks.clear();;
     }
 
     public void process(RunContext context) {
