@@ -35,6 +35,16 @@ public class ArmSlide implements IPeriodicTask {
             return;
         }
 
+        if(!Globals.armAutomation) {
+            if(Hardware.operatorStick.getRawButton(Constants.OperatorControls.slideOut)) {
+                Hardware.armSlideMotor.set(ControlMode.PercentOutput, 0.4);
+            } else if(Hardware.operatorStick.getRawButton(Constants.OperatorControls.slideIn)) {
+                Hardware.armSlideMotor.set(ControlMode.PercentOutput, -0.4);
+            } else {
+                Hardware.armSlideMotor.set(ControlMode.Disabled, 0);
+            }
+        }
+
         switch (Globals.requestedArmPosition) {
             case park:
                 setPosition(0);

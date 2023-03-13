@@ -6,6 +6,7 @@ import java.util.List;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Framework.IPeriodicTask;
 import frc.robot.Framework.RunContext;
 import frc.robot.Platform.Constants;
@@ -24,7 +25,14 @@ public class ArmLift implements IPeriodicTask{
 
     public void onLoop(RunContext context) {
         if(!Globals.armAutomation) {
+            double y = Hardware.operatorStick.getRawAxis(Constants.OperatorControls.liftAxis);
 
+            y = (Math.abs(y) < Constants.Drive.deadZone)? 0 : y;
+            y = (y > Constants.Drive.deadZone)? ((y-Constants.Drive.deadZone)/(1-Constants.Drive.deadZone)) : y;
+            y = (y < -Constants.Drive.deadZone)? ((y+Constants.Drive.deadZone)/(1-Constants.Drive.deadZone)) : y;
+            
+            Hardware.armLiftMotor.set(ControlMode.PercentOutput, y);
+            return;
         }
 
         switch (Globals.requestedArmPosition) {
@@ -67,6 +75,9 @@ public class ArmLift implements IPeriodicTask{
             getPosition() > Constants.Arm.liftInsideBumperLower
         ) {
             minimum = 0;
+            Globals.ArmConstraints.liftClawPlexiglassCrash = true;
+        } else {
+            Globals.ArmConstraints.liftClawPlexiglassCrash = false;
         }
 
         //Don't allow a ground crash when the claw is below the bumper and the lift is already low
@@ -75,6 +86,9 @@ public class ArmLift implements IPeriodicTask{
             getPosition() < Constants.Arm.liftInsideBumperLower
         ) {
             maximum = Constants.Arm.liftInsideBumperLower - 5000;
+            Globals.ArmConstraints.liftClawTiltCrash = true;
+        } else {
+            Globals.ArmConstraints.liftClawTiltCrash = false;
         }
 
         position = (position > maximum)? maximum:position;

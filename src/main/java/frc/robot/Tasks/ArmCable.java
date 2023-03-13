@@ -22,7 +22,13 @@ public class ArmCable implements IPeriodicTask {
 
     public void onLoop(RunContext context) {
         if(!Globals.armAutomation) {
+            double y = Hardware.operatorStick.getRawAxis(Constants.OperatorControls.cableAxis);
 
+            y = (Math.abs(y) < Constants.Drive.deadZone)? 0 : y;
+            y = (y > Constants.Drive.deadZone)? ((y-Constants.Drive.deadZone)/(1-Constants.Drive.deadZone)) : y;
+            y = (y < -Constants.Drive.deadZone)? ((y+Constants.Drive.deadZone)/(1-Constants.Drive.deadZone)) : y;
+            
+            Hardware.armCableMotor.set(ControlMode.PercentOutput, y);
             return;
         }
         switch (Globals.requestedArmPosition) {
