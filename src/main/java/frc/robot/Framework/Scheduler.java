@@ -22,7 +22,10 @@ public class Scheduler {
     }
 
     public void clear() {
-
+        for (IPeriodicTask task : tasks) {
+            task.onStop();
+            tasks.remove(task);
+        }
     }
 
     public void process(RunContext context) {
@@ -31,7 +34,7 @@ public class Scheduler {
                 try{task.onLoop(context);}
                 catch (Exception e) {
                     System.out.println("[" + name + 
-                    " Scheduler] encountered exception");
+                    " scheduler]" + task.getClass() + " encountered exception " + e.getMessage());
                 }
             }
         }
