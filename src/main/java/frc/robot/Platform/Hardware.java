@@ -2,6 +2,7 @@ package frc.robot.Platform;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
@@ -71,6 +72,13 @@ public class Hardware {
         armLiftMotor.config_kP(0, Constants.Arm.lift_kP);
         armLiftMotor.config_kI(0, Constants.Arm.lift_kI);
         armLiftMotor.config_kD(0, Constants.Arm.lift_kD);
+
+        armLiftMotor.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(
+            true,
+            5,
+            0,
+            0.4
+        ));
 
         armCableMotor.setInverted(true);
         armCableMotor.setSelectedSensorPosition(Constants.Arm.cableStartingPosition);
