@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Framework.IPeriodicTask;
 import frc.robot.Framework.RunContext;
 import frc.robot.Platform.Constants;
@@ -81,6 +82,9 @@ public class ArmCable implements IPeriodicTask {
 
         position = (position > maximum)? maximum:position;
         position = (position < minimum)? minimum:position;
+
+        SmartDashboard.putNumber("Cable min position", minimum);
+        SmartDashboard.putNumber("Cable maximum position", maximum);
 
         Hardware.armCableMotor.set(ControlMode.Position, Constants.Arm.slideParkPosition);
     }

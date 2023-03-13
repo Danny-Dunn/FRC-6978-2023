@@ -80,6 +80,9 @@ public class ArmLift implements IPeriodicTask{
         position = (position > maximum)? maximum:position;
         position = (position < minimum)? minimum:position;
 
+        SmartDashboard.putNumber("Lift min position", minimum);
+        SmartDashboard.putNumber("Lift maximum position", maximum);
+
         Hardware.armLiftMotor.set(ControlMode.Position, position);
     }
 
