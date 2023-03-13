@@ -379,36 +379,8 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
 
-    if(driveStick.getRawButton(30)){
-      
-      if(Math.abs(navX.getRoll()) >= 3){
-        isSticking = true;
-      } 
-      
-      if(isSticking){
-        balancingPID(-0.016, angleD, 0.4);
-      } else {
-        leftDrive1.set(ControlMode.PercentOutput, 0.4);
-        rightDrive1.set(ControlMode.PercentOutput, 0.4);
-      }
-    }
-    else {
-      if (driveStick.getRawButton(14)){
-        balanceRobot_DrivingBackward();
-        setBrakeMode(true);
-        driveShiftBool = false;
-      }
-      else{
-        //driveButBetter();
-        drive();
-      }
-      isSticking = false;
-      if (brakeStatus && !isSticking){
-        brakeStatus = false;
-        //setBrakeMode();
-      }
-
-    }
+    
+    drive();
 
     //if(driveStick.getRawButtonPressed(10)){
       //fastDriving = !fastDriving;
@@ -424,7 +396,7 @@ public class Robot extends TimedRobot {
     driveGearShiftSolenoid.set(driveShiftBool);
 
 
-    if(operatorStick.getRawButtonPressed(4)){
+    if(driveStick.getRawButtonPressed(2)){
       gripperBool = !gripperBool;
     }
     gripperSolenoid.set(gripperBool);
@@ -511,60 +483,27 @@ public class Robot extends TimedRobot {
       else if (operatorStick.getRawButton(5)){
         armSlideGoal = 0;
       }*/
-      if (operatorStick.getRawButton(6)){
-        armMotor.set(ControlMode.PercentOutput, 0.4);
+      if (driveStick.getRawButton(6)){
+        liftMotor.set(ControlMode.PercentOutput, 0.4);
       }
-      else if (operatorStick.getRawButton(5)){
-        armMotor.set(ControlMode.PercentOutput, -0.4);
+      else if (driveStick.getRawButton(5)){
+        liftMotor.set(ControlMode.PercentOutput, -0.4);
       }
       else{
         //armPID(armSlideGoal);
-        armMotor.set(ControlMode.PercentOutput, 0);
+        liftMotor.set(ControlMode.PercentOutput, 0);
       }
       
       
 
-      liftMotor.set(ControlMode.PercentOutput, -operatorStick.getRawAxis(3));
+      armMotor.set(ControlMode.PercentOutput, -driveStick.getRawAxis(3));
 
-      armRotator.set(ControlMode.PercentOutput, -Math.pow(operatorStick.getRawAxis(1), 3));
+      armRotator.set(ControlMode.PercentOutput, -Math.pow(driveStick.getRawAxis(2), 3));
       //auto arm stuff
 
 
     }
     else{ //not in manual mode
-
-
-      //arm rotation
-      
-      if(operatorStick.getRawButton(5)){
-        armAutoPosition = 1;
-      }
-      if(armAutoPosition == 1) {
-        if(operatorStick.getRawButton(1)){
-          armAutoPosition = 0;
-        }else if(operatorStick.getRawButton(6)){
-          armAutoPosition = 2;
-        }
-        else if(operatorStick.getRawButton(7)){
-          armAutoPosition = 3;
-        }
-        else if(operatorStick.getRawButton(8)){
-          armAutoPosition = 4;
-        }
-        else if(operatorStick.getPOV() == 180){
-          armAutoPosition = 5;
-        } else if (operatorStick.getRawButton(3)) {
-          armAutoPosition = 6;
-        } else if (operatorStick.getRawButton(2)) {
-          armAutoPosition = 7;
-        }
-      }
-
-      //armMotor.set(ControlMode.Position, armSlidePositions[armAutoPosition]);
-      //double armSlideGoalFixed = 
-      armPID(armSlidePositions[armAutoPosition]);
-      liftMotor.set(ControlMode.Position, armLiftPositions[armAutoPosition]);
-      armRotator.set(ControlMode.Position, armRotatePositions[armAutoPosition]);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////// the wall
 
