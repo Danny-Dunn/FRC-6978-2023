@@ -68,21 +68,21 @@ public class Constants {
     public static class OperatorControls {
         public static int zeroArm = 10;
 
-        public static int toggleClaw = 2;//south
+        public static int toggleClaw = 4;//south
 
         public static int slideIn = 5;
         public static int slideOut = 6;
         
-        public static int cableAxis = 3;
-        public static int liftAxis = 4;
+        public static int cableAxis = 1;
+        public static int liftAxis = 3;
 
-        public static int toggleArmAutomation = 11; //west
+        public static int toggleArmAutomation = 9; 
 
         //auto mode buttons
         public static int park = 1; //west
         public static int partialParkPOV = 180; //pov hat
         public static int groundPickup = 3; //east
-        public static int humanPickup = 4; //north
+        public static int humanPickup = 2; //north
         public static int cubeMid = 5; //left bumper
         public static int coneMid = 6; //right bumper
         public static int cubeHigh = 7; //left trigger
