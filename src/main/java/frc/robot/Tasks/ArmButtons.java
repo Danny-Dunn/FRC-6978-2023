@@ -40,38 +40,39 @@ public class ArmButtons implements IPeriodicTask {
             Hardware.gripperSolenoid.set(gripperState);
         }
 
-        if(Hardware.operatorStick.getRawButton(OperatorControls.park)){
-            Globals.requestedArmPosition = ArmPosition.park;
-        }
+        if(Globals.armAutomation) {
+            if(Hardware.operatorStick.getRawButton(OperatorControls.park)){
+                Globals.requestedArmPosition = ArmPosition.park;
+            }
 
-        if(Hardware.operatorStick.getPOV() == OperatorControls.partialParkPOV){
-            Globals.requestedArmPosition = ArmPosition.park;
-        }
-        
-        if(Hardware.operatorStick.getRawButton(OperatorControls.groundPickup)){
-            Globals.requestedArmPosition = ArmPosition.groundPickup;
-        }
+            if(Hardware.operatorStick.getPOV() == OperatorControls.partialParkPOV){
+                Globals.requestedArmPosition = ArmPosition.park;
+            }
+            
+            if(Hardware.operatorStick.getRawButton(OperatorControls.groundPickup)){
+                Globals.requestedArmPosition = ArmPosition.groundPickup;
+            }
 
-        if(Hardware.operatorStick.getRawButton(OperatorControls.humanPickup)){
-            Globals.requestedArmPosition = ArmPosition.humanPickup;
-        }
+            if(Hardware.operatorStick.getRawButton(OperatorControls.humanPickup)){
+                Globals.requestedArmPosition = ArmPosition.humanPickup;
+            }
 
-        if(Hardware.operatorStick.getRawButton(OperatorControls.cubeMid)){
-            Globals.requestedArmPosition = ArmPosition.cubeMid;
-        }
+            if(Hardware.operatorStick.getRawButton(OperatorControls.cubeMid)){
+                Globals.requestedArmPosition = ArmPosition.cubeMid;
+            }
 
-        if(Hardware.operatorStick.getRawButton(OperatorControls.coneMid)){
-            Globals.requestedArmPosition = ArmPosition.coneMid;
-        }
+            if(Hardware.operatorStick.getRawButton(OperatorControls.coneMid)){
+                Globals.requestedArmPosition = ArmPosition.coneMid;
+            }
 
-        if(Hardware.operatorStick.getRawButton(OperatorControls.cubeHigh)){
-            Globals.requestedArmPosition = ArmPosition.cubeHigh;
-        }
+            if(Hardware.operatorStick.getRawButton(OperatorControls.cubeHigh)){
+                Globals.requestedArmPosition = ArmPosition.cubeHigh;
+            }
 
-        if(Hardware.operatorStick.getRawButton(OperatorControls.coneHigh)){
-            Globals.requestedArmPosition = ArmPosition.coneHigh;
+            if(Hardware.operatorStick.getRawButton(OperatorControls.coneHigh)){
+                Globals.requestedArmPosition = ArmPosition.coneHigh;
+            }
         }
-
         SmartDashboard.putString("Requested Arm Position", Globals.requestedArmPosition.toString());
         SmartDashboard.putBoolean("constrainLiftClawPlexiglassCrash", Globals.ArmConstraints.liftClawPlexiglassCrash);
         SmartDashboard.putBoolean("constrainLiftClawTiltCrash", Globals.ArmConstraints.liftClawTiltCrash);
