@@ -24,6 +24,8 @@ public class ArmLift implements IPeriodicTask{
     public void onStop() {}
 
     public void onLoop(RunContext context) {
+        SmartDashboard.putNumber("ArmLiftPosition", Hardware.armLiftMotor.getSelectedSensorPosition());
+
         if(!Globals.armAutomation) {
             double y = Hardware.operatorStick.getRawAxis(Constants.OperatorControls.liftAxis);
 

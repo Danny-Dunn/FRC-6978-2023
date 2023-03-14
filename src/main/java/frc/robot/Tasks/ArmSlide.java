@@ -26,6 +26,10 @@ public class ArmSlide implements IPeriodicTask {
     public void onStop() {}
 
     public void onLoop(RunContext context) {
+        SmartDashboard.putNumber("ArmSlidePosition", Hardware.armSlideMotor.getSelectedSensorPosition());
+
+        SmartDashboard.putNumber("SlideCurrent", Hardware.armSlideMotor.getStatorCurrent());
+
         if(calibrating) {
             if(Hardware.armSlideMotor.getSelectedSensorVelocity() < 250) {
                 calibrating = false;
@@ -41,10 +45,11 @@ public class ArmSlide implements IPeriodicTask {
             } else if(Hardware.operatorStick.getRawButton(Constants.OperatorControls.slideIn)) {
                 Hardware.armSlideMotor.set(ControlMode.PercentOutput, -0.4);
             } else if(Hardware.operatorStick.getRawButton(Constants.OperatorControls.zeroArm)) {
-                Hardware.armSlideMotor.set(ControlMode.Disabled, -0.1);
+                Hardware.armSlideMotor.set(ControlMode.PercentOutput, -0.1);
             } else {
                 Hardware.armSlideMotor.set(ControlMode.Disabled, 0);
             }
+            return;
         }
 
         switch (Globals.requestedArmPosition) {
