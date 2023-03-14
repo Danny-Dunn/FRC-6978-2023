@@ -73,11 +73,13 @@ public class Hardware {
         armLiftMotor.config_kI(0, Constants.Arm.lift_kI);
         armLiftMotor.config_kD(0, Constants.Arm.lift_kD);
 
+        armLiftMotor.configOpenloopRamp(0);
+
         armLiftMotor.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(
-            true,
-            5,
-            0,
-            0.4
+            false,
+            9,
+            15,
+            0.5
         ));
 
         armCableMotor.setInverted(true);
