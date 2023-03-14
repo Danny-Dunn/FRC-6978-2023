@@ -37,32 +37,7 @@ public class ArmLift implements IPeriodicTask{
             return;
         }
 
-        switch (Globals.requestedArmPosition) {
-            case park:
-                setPosition(0);
-                break;
-            case partialPark:
-                setPosition(0);
-                break;
-            case groundPickup:
-                setPosition(-640000);
-                break;
-            case humanPickup:
-                setPosition(-370000);
-                break;
-            case cubeMid:
-                setPosition(-531000);
-                break;
-            case coneMid:
-                setPosition(-531000);
-                break;
-            case cubeHigh:
-                setPosition(-358000);
-                break;
-            case coneHigh:
-                setPosition(-358000);
-                break;
-        }
+        setPosition(Constants.Arm.liftPositionMap.get(Globals.requestedArmPosition));
     }
 
     public void setPosition(double position) {

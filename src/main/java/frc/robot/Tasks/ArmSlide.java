@@ -52,32 +52,7 @@ public class ArmSlide implements IPeriodicTask {
             return;
         }
 
-        switch (Globals.requestedArmPosition) {
-            case park:
-                setPosition(0);
-                break;
-            case partialPark:
-                setPosition(0);
-                break;
-            case groundPickup:
-                setPosition(0);
-                break;
-            case humanPickup:
-                setPosition(0);
-                break;
-            case cubeMid:
-                setPosition(0);
-                break;
-            case coneMid:
-                setPosition(10051);
-                break;
-            case cubeHigh:
-                setPosition(17000);
-                break;
-            case coneHigh:
-                setPosition(19900);
-                break;
-        }
+        setPosition(Constants.Arm.slidePositionMap.get(Globals.requestedArmPosition));
     }
 
     public void setPosition(double position) {

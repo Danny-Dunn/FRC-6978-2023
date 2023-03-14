@@ -1,5 +1,7 @@
 package frc.robot.Platform;
 
+import java.util.HashMap;
+
 public class Constants {
     public static class Drive {
         public static double kP = 0.01;
@@ -30,11 +32,21 @@ public class Constants {
     public static class Arm {
         public static double slideStartingPosition = 0;
         public static double slideParkPosition = 0;
-        public static double slideMidPosition = 8000;
         public static double slideMaxExtension = 19000;
         public static double slide_kP = 0.15;
         public static double slide_kI = 0.0;
         public static double slide_kD = 30.0;
+
+        public static HashMap<ArmPosition, Double> slidePositionMap = new HashMap<ArmPosition, Double>() {{
+            put(ArmPosition.park, 0d);
+            put(ArmPosition.partialPark, 0d);
+            put(ArmPosition.groundPickup, 0d);
+            put(ArmPosition.humanPickup, -0d);
+            put(ArmPosition.cubeMid, 0d);
+            put(ArmPosition.coneMid, 10051d);
+            put(ArmPosition.cubeHigh, 17000d);
+            put(ArmPosition.coneHigh, 19900d);
+        }};
         
         public static double liftStartingPosition = 0;
         public static double liftLowerPosition = -800000;
@@ -45,12 +57,34 @@ public class Constants {
         public static double lift_kI = 0.0;
         public static double lift_kD = 10;
 
+        public static HashMap<ArmPosition, Double> liftPositionMap = new HashMap<ArmPosition, Double>() {{
+            put(ArmPosition.park, 0d);
+            put(ArmPosition.partialPark, 0d);
+            put(ArmPosition.groundPickup, -640000d);
+            put(ArmPosition.humanPickup, -370000d);
+            put(ArmPosition.cubeMid, -531000d);
+            put(ArmPosition.coneMid, -531000d);
+            put(ArmPosition.cubeHigh, -358000d);
+            put(ArmPosition.coneHigh, -358000d);
+        }};
+
         public static double cableStartingPosition = 0;
         public static double cableBumperClearancePosition = 38000;
         public static double cableMaxPosition = 408000;
         public static double cable_kP = 0.01;
         public static double cable_kI = 0.0;
         public static double cable_kD = 0.0;
+
+        public static HashMap<ArmPosition, Double> cablePositionMap = new HashMap<ArmPosition, Double>() {{
+            put(ArmPosition.park, 0d);
+            put(ArmPosition.partialPark, 37000d);
+            put(ArmPosition.groundPickup, -76000d);
+            put(ArmPosition.humanPickup, 362000d);
+            put(ArmPosition.cubeMid, 226174d);
+            put(ArmPosition.coneMid, 336000d);
+            put(ArmPosition.cubeHigh, 370000d);
+            put(ArmPosition.coneHigh, 402000d);
+        }};
 
         public static boolean gripperCloseDefaultState = false;
 

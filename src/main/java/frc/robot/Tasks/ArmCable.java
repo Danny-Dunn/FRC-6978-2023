@@ -34,32 +34,7 @@ public class ArmCable implements IPeriodicTask {
             return;
         }
 
-        switch (Globals.requestedArmPosition) {
-            case park:
-                setPosition(0);
-                break;
-            case partialPark:
-                setPosition(37000);
-                break;
-            case groundPickup:
-                setPosition(-76000);
-                break;
-            case humanPickup:
-                setPosition(362000);
-                break;
-            case cubeMid:
-                setPosition(226174);
-                break;
-            case coneMid:
-                setPosition(336000);
-                break;
-            case cubeHigh:
-                setPosition(370000);
-                break;
-            case coneHigh:
-                setPosition(402000);
-                break;
-        }
+        setPosition(Constants.Arm.cablePositionMap.get(Globals.requestedArmPosition));
     }
 
     public void setPosition(double position) {
