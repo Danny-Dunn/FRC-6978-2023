@@ -53,6 +53,11 @@ public class Constants {
         public static double cable_kD = 0.0;
 
         public static boolean gripperCloseDefaultState = false;
+
+        public static double wheelBias = .25;
+        public static double wheelSlow = .25;
+        public static double wheelFast = .8;
+        public static double wheelLaunch = .7;
     }
 
     public static class DriverControls {
@@ -63,6 +68,10 @@ public class Constants {
 
         public static int gearShift = 10;
         public static int balance = 11;
+
+        public static int slowWheelsIn = 1;
+        public static int fastWheelsIn = 4;
+        public static int fastWheelsOut = 3;
     }
 
     //FIXME: Operator controls

@@ -3,6 +3,8 @@ package frc.robot.Tasks;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Framework.IPeriodicTask;
 import frc.robot.Framework.RunContext;
@@ -40,6 +42,25 @@ public class ArmButtons implements IPeriodicTask {
             Hardware.gripperSolenoid.set(gripperState);
         }
 
+        if(Hardware.driverStick.getRawButtonPressed(Constants.DriverControls.slowWheelsIn)) {
+            Hardware.gripperWheelsMotor.set(ControlMode.PercentOutput, Constants.Arm.wheelSlow);
+        }
+
+        if(Hardware.driverStick.getRawButtonPressed(Constants.DriverControls.fastWheelsIn)) {
+            Hardware.gripperWheelsMotor.set(ControlMode.PercentOutput, Constants.Arm.wheelSlow);
+        }
+
+        if(Hardware.driverStick.getRawButtonPressed(Constants.DriverControls.fastWheelsOut)) {
+            Hardware.gripperWheelsMotor.set(ControlMode.PercentOutput, -Constants.Arm.wheelLaunch);
+        }
+
+        if(
+            Hardware.driverStick.getRawButtonReleased(Constants.DriverControls.fastWheelsIn) ||
+            Hardware.driverStick.getRawButtonReleased(Constants.DriverControls.fastWheelsOut)
+        ) {
+            Hardware.gripperWheelsMotor.set(ControlMode.Disabled, 0);
+        }
+
         if(Globals.armAutomation) {
             if(Hardware.operatorStick.getRawButton(OperatorControls.park)){
                 Globals.requestedArmPosition = ArmPosition.park;
@@ -73,11 +94,11 @@ public class ArmButtons implements IPeriodicTask {
                 Globals.requestedArmPosition = ArmPosition.coneHigh;
             }
         }
+
         SmartDashboard.putString("Requested Arm Position", Globals.requestedArmPosition.toString());
         SmartDashboard.putBoolean("constrainLiftClawPlexiglassCrash", Globals.ArmConstraints.liftClawPlexiglassCrash);
         SmartDashboard.putBoolean("constrainLiftClawTiltCrash", Globals.ArmConstraints.liftClawTiltCrash);
         SmartDashboard.putBoolean("constrainCableBumperClearance", Globals.ArmConstraints.cableBumperClearance);
-
     }
 
     public List<RunContext> getAllowedRunContexts() { 
