@@ -56,8 +56,9 @@ public class Constants {
     }
 
     public static class DriverControls {
+        public static int steeringAxis = 0;
         public static int forwardAxis = 4;
-        public static int reverseAxis = 4;
+        public static int reverseAxis = 3;
 
 
         public static int gearShift = 10;

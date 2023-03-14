@@ -83,19 +83,23 @@ public class DifferentialDrive implements IPeriodicTask{
         double y;
 
         //TODO: TOP!! fix drive inversion
-        x = Hardware.driverStick.getRawAxis(0);
-        y = (Hardware.driverStick.getRawAxis(4) + 1 )/2 - (Hardware.driverStick.getRawAxis(3) + 1 )/2 ;
-
-        //x = x * x *x; 
-       
+        x = Hardware.driverStick.getRawAxis(Constants.DriverControls.steeringAxis);
+        y = (Hardware.driverStick.getRawAxis(Constants.DriverControls.forwardAxis) + 1 )/2 - 
+            (Hardware.driverStick.getRawAxis(Constants.DriverControls.reverseAxis) + 1 )/2;
 
         x = (Math.abs(x) < Constants.Drive.deadZone)? 0 : x;
-        x = (x > Constants.Drive.deadZone)? ((x-Constants.Drive.deadZone)/(1-Constants.Drive.deadZone)) : x;
-        x = (x < -Constants.Drive.deadZone)? ((x+Constants.Drive.deadZone)/(1-Constants.Drive.deadZone)) : x;
+        x = (x > Constants.Drive.deadZone)? 
+            ((x-Constants.Drive.deadZone)/(1-Constants.Drive.deadZone)) : x;
+
+        x = (x < -Constants.Drive.deadZone)? 
+            ((x+Constants.Drive.deadZone)/(1-Constants.Drive.deadZone)) : x;
 
         y = (Math.abs(y) < Constants.Drive.deadZone)? 0 : y;
-        y = (y > Constants.Drive.deadZone)? ((y-Constants.Drive.deadZone)/(1-Constants.Drive.deadZone)) : y;
-        y = (y < -Constants.Drive.deadZone)? ((y+Constants.Drive.deadZone)/(1-Constants.Drive.deadZone)) : y;
+        y = (y > Constants.Drive.deadZone)? 
+            ((y-Constants.Drive.deadZone)/(1-Constants.Drive.deadZone)) : y;
+
+        y = (y < -Constants.Drive.deadZone)? 
+            ((y+Constants.Drive.deadZone)/(1-Constants.Drive.deadZone)) : y;
 
         x *= Constants.Drive.xMultiplier;
         y *= Constants.Drive.yMultiplier;
