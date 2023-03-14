@@ -105,7 +105,7 @@ public class ArmCable implements IPeriodicTask {
     }
 
     public double getPosition() {
-        return Hardware.armSlideMotor.getSelectedSensorPosition();
+        return Hardware.armCableMotor.getSelectedSensorPosition();
     }
 
     public List<RunContext> getAllowedRunContexts() { 
