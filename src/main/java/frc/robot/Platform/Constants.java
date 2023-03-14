@@ -32,16 +32,16 @@ public class Constants {
         public static double slideParkPosition = 0;
         public static double slideMidPosition = 8000;
         public static double slideMaxExtension = 19000;
-        public static double slide_kP = 0.25;
+        public static double slide_kP = 0.15;
         public static double slide_kI = 0.0;
-        public static double slide_kD = 0.0;
+        public static double slide_kD = 30.0;
         
         public static double liftStartingPosition = 0;
         public static double liftLowerPosition = -800000;
         public static double liftUpperPosition = 0;
         public static double liftInsideBumperLower = -100000;
         public static double liftInsideBumperUpper = -5000;
-        public static double lift_kP = 0.02;
+        public static double lift_kP = 0.04;
         public static double lift_kI = 0.0;
         public static double lift_kD = 10;
 
