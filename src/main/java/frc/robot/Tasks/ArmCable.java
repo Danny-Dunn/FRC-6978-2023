@@ -21,8 +21,10 @@ public class ArmCable implements IPeriodicTask {
     public void onStop() {}
 
     public void onLoop(RunContext context) {
+        SmartDashboard.putNumber("ArmCablePosition", Hardware.armCableMotor.getSelectedSensorPosition());
+
         if(!Globals.armAutomation) {
-            double y = Hardware.operatorStick.getRawAxis(Constants.OperatorControls.cableAxis);
+            double y = -Hardware.operatorStick.getRawAxis(Constants.OperatorControls.cableAxis);
 
             y = (Math.abs(y) < Constants.Drive.deadZone)? 0 : y;
             y = (y > Constants.Drive.deadZone)? ((y-Constants.Drive.deadZone)/(1-Constants.Drive.deadZone)) : y;
@@ -31,6 +33,7 @@ public class ArmCable implements IPeriodicTask {
             Hardware.armCableMotor.set(ControlMode.PercentOutput, y);
             return;
         }
+
         switch (Globals.requestedArmPosition) {
             case park:
                 setPosition(0);
@@ -91,8 +94,10 @@ public class ArmCable implements IPeriodicTask {
 
         SmartDashboard.putNumber("Cable min position", minimum);
         SmartDashboard.putNumber("Cable maximum position", maximum);
+        SmartDashboard.putNumber("Cable target position", position);
 
-        Hardware.armCableMotor.set(ControlMode.Position, Constants.Arm.slideParkPosition);
+
+        Hardware.armCableMotor.set(ControlMode.Position, position);
     }
 
     public double getTarget() {
