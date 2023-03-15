@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.Joystick;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -58,7 +59,7 @@ public class Robot extends TimedRobot {
   boolean manualMode = true;
 
   //auto stuff
-  int autoType = 0;
+  int autoType = 1;
   double autoTimer = 0;
 
 
@@ -117,6 +118,12 @@ public class Robot extends TimedRobot {
   private double liftD;
   private double liftSetpointPos;
 
+  //safety
+  double safetyTimerLift = 0;
+  boolean liftAllowedToRun = true;
+  boolean liftSafetyTriggered = false;
+  double highestAmperage = 0;
+
   private double targetAngle;
 
   //Collection<TalonFX> _fxes =  { new TalonFX(1), new TalonFX(2), new TalonFX(3) };
@@ -132,10 +139,26 @@ public class Robot extends TimedRobot {
     rightDrive2 = new TalonFX(4);
     liftMotor = new TalonFX(5);
 
+    liftMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(
+      false,
+      0,
+      5,
+      1
+    ));
+
+    liftMotor.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(
+      false,
+      5,
+      30,
+      0.2
+    ));
+
     //testMotor = new TalonSRX(24); //this was on the comp bot for the rotating arm
     armMotor = new TalonSRX(11);
     armMotor.setInverted(true);
     armMotor.setSensorPhase(false);
+    armMotor.config_kP(0, 0.5);
+    armMotor.configClosedloopRamp(0.2);
     //armMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 10, 12, ))
 
     armRotator = new TalonFX(50);
@@ -267,8 +290,29 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("navX angle", navX.getAngle());
     SmartDashboard.putNumber("navX yaw", navX.getYaw());
     SmartDashboard.putNumber("target angle", targetAngle);
+    SmartDashboard.putNumber("Lift Current", liftMotor.getSupplyCurrent());
+    SmartDashboard.putNumber("Lift MAX Current", highestAmperage);
 
     //SmartDashboard.putNumber("ArmP", 0);
+
+    SmartDashboard.putBoolean("Lift Allowed ON:", liftAllowedToRun);
+
+    SmartDashboard.putBoolean("High Gear", driveShiftBool);
+
+    liftSafetyShutoff(0.1, 10);
+
+    if (liftMotor.getSupplyCurrent() > highestAmperage){
+      highestAmperage = liftMotor.getSupplyCurrent();
+    }
+
+    if (!liftAllowedToRun){
+      liftMotor.set(ControlMode.Disabled, 0);
+    }
+
+    SmartDashboard.putNumber("Auto Step", autoStep);
+
+    SmartDashboard.putNumber("LeftDrive POS", leftDrive1.getSelectedSensorPosition());
+    SmartDashboard.putNumber("rightDrive POS", rightDrive1.getSelectedSensorPosition());
 
   }
 
@@ -283,11 +327,6 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     
-    armMotor.setSelectedSensorPosition(0);
-
-    armRotator.setSelectedSensorPosition(0);
-
-    liftMotor.setSelectedSensorPosition(0);
   }
 
   /** This function is called periodically during autonomous. */
@@ -315,6 +354,12 @@ public class Robot extends TimedRobot {
       case 0:
         auto1_DropPieceMoveBackwardNoBalance();
         break;
+        case 1:
+          auto2_DropPieceMoveBackwardBalanceBackward();
+          break;
+        case 2:
+          auto2_DropPieceMoveBackwardBalanceBackward();
+          break;
     }
     
   }
@@ -322,59 +367,212 @@ public class Robot extends TimedRobot {
   public void auto1_DropPieceMoveBackwardNoBalance(){
     switch(autoStep){
       case 0:
-        if (armRotator.getSelectedSensorPosition() < 190000){
-          armRotator.set(ControlMode.Position, 200000);
-          liftMotor.set(ControlMode.Position, -40000);
-          armMotor.set(ControlMode.PercentOutput, -.4);
-          gripperSolenoid.set(true);
+        if (armRotator.getSelectedSensorPosition() < armRotatePositions[1] * 0.9){
+          armRotator.set(ControlMode.Position, armRotatePositions[1]);
+          if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[1]);
+          armMotor.set(ControlMode.PercentOutput, -0.1);
+          gripperSolenoid.set(false);
         }
         else{
           autoStep++;
           armMotor.setSelectedSensorPosition(0);
-
         }
         break;
       case 1:
-        armMotor.set(ControlMode.Position, 7360);
+        armMotor.set(ControlMode.Position, armSlidePositions[2]);
+        //armPID(armSlidePositions[2]);
+        armRotator.set(ControlMode.Position, armRotatePositions[2]);
+        if (liftAllowedToRun) {liftMotor.set(ControlMode.Position, armLiftPositions[2]);}
         autoStep++;
         break;
       case 2:
-        if(Math.abs(armMotor.getSelectedSensorPosition() - 7360) < 600) {
+        if (armRotator.getSelectedSensorPosition() < armRotatePositions[2] * 0.9){
           autoStep++;
+          autoTimer = timer.get();
         }
         break;
       case 3:
-        gripperSolenoid.set(false);
-        autoTimer = timer.get();
-        autoStep++;
+        if (timer.get() - autoTimer > 2.5){
+          gripperSolenoid.set(true);
+          autoTimer = timer.get();
+          autoStep++;
+        }
         break;
       case 4:
-        if (timer.get() - autoTimer > 2){
+        if (timer.get() - autoTimer > 1){
           autoStep++;
         }
         break;
       case 5:
-        //drive backwards
+        //drive backwards and lower into floor pickup position
+        armMotor.set(ControlMode.Position, armSlidePositions[7]);
+        armRotator.set(ControlMode.Position, armRotatePositions[7]);
+        if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[7]);
+        driveShiftBool = false;
+        setBrakeMode(driveShiftBool);
+        distancePID(-300000, 0.001, 5000);;
+        autoStep++;
+        break;
+      case 7:
+        if(Math.abs(-300000 - ((leftDrive1.getSelectedSensorPosition() + rightDrive1.getSelectedSensorPosition()) / 2)) < 5000) {
+          autoStep++;
+        }
+        break;
+      case 8:
+        targetAngle = calculateAngleToTurn(180);
+        autoStep++;
+        break;
+      case 9:
+        if(Math.abs(yawPID(0.037, targetAngle, 2500)) < 5) {
+          autoStep++;
+        }
+        break;
+    }
+  }
+
+  public void auto2_DropPieceMoveBackwardBalanceBackward(){
+    switch(autoStep){
+      case 0:
+        if (armRotator.getSelectedSensorPosition() < armRotatePositions[2] * 0.9){
+          armRotator.set(ControlMode.Position, armRotatePositions[2]);
+          if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[1]);
+          armMotor.set(ControlMode.PercentOutput, -0.1);
+          gripperSolenoid.set(false);
+        }
+        else{
+          autoStep++;
+          armMotor.setSelectedSensorPosition(0);
+        }
+        break;
+      case 1:
+        armRotator.set(ControlMode.Position, armRotatePositions[2]);
+        autoStep++;
+        break;
+      case 2:
+        if (armRotator.getSelectedSensorPosition() > armRotatePositions[2] * 0.9){
+          armMotor.set(ControlMode.Position, armSlidePositions[2]);
+          //armPID(armSlidePositions[2]);
+          if (liftAllowedToRun) {liftMotor.set(ControlMode.Position, armLiftPositions[2]);}
+          autoStep++;
+          autoTimer = timer.get();
+        }
+        break;
+      case 3:
+        if (timer.get() - autoTimer > 1){
+          gripperSolenoid.set(true);
+          autoTimer = timer.get();
+          autoStep++;
+        }
+        break;
+      case 4:
+        if (timer.get() - autoTimer > 1){
+          autoStep++;
+        }
+        break;
+      case 5:
+        //drive backwards and lower into floor pickup position
+        armMotor.set(ControlMode.Position, armSlidePositions[7]);
+        armRotator.set(ControlMode.Position, armRotatePositions[7]);
+        if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[7]);
         driveShiftBool = false;
         setBrakeMode(driveShiftBool);
         distancePID(-300000, 0.001, 5000);;
         autoStep++;
         break;
       case 6:
-        if(Math.abs(-300000 - ((leftDrive1.getSelectedSensorPosition() + rightDrive1.getSelectedSensorPosition()) / 2)) < 5000) {
+        if (navX.getPitch() < -8){
+          //activate balcncing code
           autoStep++;
         }
         break;
       case 7:
-        targetAngle = calculateAngleToTurn(180);
+        setBrakeMode(true);
+        balanceRobot_DrivingBackward();
+        break;
+    }
+  }
+
+  public void autoDriveToPositionVelocityDrive(int distanceGoal, int goalVelocity, int maxOut, double p){
+    double error = distanceGoal - ((leftDrive1.getSelectedSensorPosition() + rightDrive1.getSelectedSensorPosition()) / 2);
+    double output = error * goalVelocity * p;
+
+    output = output > maxOut ? maxOut : output;
+    output = output < -maxOut ? -maxOut : output;
+
+    leftDrive1.set(ControlMode.Velocity, output);
+    rightDrive1.set(ControlMode.Velocity, output);
+  }
+
+  public void auto2_DropPieceMoveBackwardBalanceBackward(){
+    switch(autoStep){
+      case 0:
+        if (armRotator.getSelectedSensorPosition() < armRotatePositions[2] * 0.9){
+          armRotator.set(ControlMode.Position, armRotatePositions[2]);
+          if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[1]);
+          armMotor.set(ControlMode.PercentOutput, -0.1);
+          gripperSolenoid.set(false);
+        }
+        else{
+          autoStep++;
+          armMotor.setSelectedSensorPosition(0);
+        }
+        break;
+      case 1:
+        armRotator.set(ControlMode.Position, armRotatePositions[2]);
         autoStep++;
         break;
-      case 8:
-        if(Math.abs(yawPID(0.037, targetAngle, 2500)) < 5) {
+      case 2:
+        if (armRotator.getSelectedSensorPosition() > armRotatePositions[2] * 0.9){
+          armMotor.set(ControlMode.Position, armSlidePositions[2]);
+          //armPID(armSlidePositions[2]);
+          if (liftAllowedToRun) {liftMotor.set(ControlMode.Position, armLiftPositions[2]);}
+          autoStep++;
+          autoTimer = timer.get();
+        }
+        break;
+      case 3:
+        if (timer.get() - autoTimer > 1){
+          gripperSolenoid.set(true);
+          autoTimer = timer.get();
           autoStep++;
         }
         break;
+      case 4:
+        if (timer.get() - autoTimer > 1){
+          autoStep++;
+        }
+        break;
+      case 5:
+        //drive backwards and lower into floor pickup position
+        armMotor.set(ControlMode.Position, armSlidePositions[7]);
+        armRotator.set(ControlMode.Position, armRotatePositions[7]);
+        if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[7]);
+        leftDrive1.set(ControlMode.Velocity, 7000);
+        rightDrive1.set(ControlMode.Velocity, 7000);
+        autoStep++;
+        break;
+      case 6:
+        if (navX.getPitch() < -8){
+          //activate balcncing code
+          autoStep++;
+        }
+        break;
+      case 7:
+        setBrakeMode(true);
+        balanceRobot_DrivingBackward();
+        break;
     }
+  }
+
+  public void autoDriveToPositionVelocityDrive(int distanceGoal, int goalVelocity, int maxOut, double p){
+    double error = distanceGoal - ((leftDrive1.getSelectedSensorPosition() + rightDrive1.getSelectedSensorPosition()) / 2);
+    double output = error * goalVelocity * p;
+
+    output = output > maxOut ? maxOut : output;
+    output = output < -maxOut ? -maxOut : output;
+
+    leftDrive1.set(ControlMode.Velocity, output);
+    rightDrive1.set(ControlMode.Velocity, output);
   }
 
   @Override
@@ -383,22 +581,23 @@ public class Robot extends TimedRobot {
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
-    armRotator.setSelectedSensorPosition(0);
-    liftMotor.setSelectedSensorPosition(0);
     double armP = SmartDashboard.getNumber("ArmP", 0);
 
-    armMotor.config_kP(0, 0.02);
-    armMotor.config_kD(0, 0);
+    //armMotor.config_kP(0, 0.02);
+    //armMotor.config_kD(0, 0);
     brakeStatus = false;
     setBrakeMode(false);
 
+    liftAllowedToRun = SmartDashboard.getBoolean("Lift Allowed ON:", false);
+
     //armMotor.setSelectedSensorPosition(0);
 
-
-    armRotator.setSelectedSensorPosition(0);
     armRotator.config_kP(0, 0.01);
     armRotator.config_kI(0, 0.0);
     armRotator.config_kD(0, 0.0);
+
+    leftDrive1.setSelectedSensorPosition(0);
+    rightDrive1.setSelectedSensorPosition(0);
 
 
   }
@@ -431,8 +630,8 @@ public class Robot extends TimedRobot {
         yawPID(0.037, targetAngle, 2500);
       }
       else{
-        //driveButBetter();
-        drive();
+        driveButBetter();
+        //drive();
       }
       isSticking = false;
       if (brakeStatus && !isSticking){
@@ -556,7 +755,7 @@ public class Robot extends TimedRobot {
       
       
 
-      liftMotor.set(ControlMode.PercentOutput, -operatorStick.getRawAxis(3));
+      if (liftAllowedToRun) liftMotor.set(ControlMode.PercentOutput, -operatorStick.getRawAxis(3));
 
       armRotator.set(ControlMode.PercentOutput, -Math.pow(operatorStick.getRawAxis(1), 3));
       //auto arm stuff
@@ -594,8 +793,9 @@ public class Robot extends TimedRobot {
 
       //armMotor.set(ControlMode.Position, armSlidePositions[armAutoPosition]);
       //double armSlideGoalFixed = 
-      armPID(armSlidePositions[armAutoPosition]);
-      liftMotor.set(ControlMode.Position, armLiftPositions[armAutoPosition]);
+      //armPID(armSlidePositions[armAutoPosition]);
+      armMotor.set(ControlMode.Position, armSlidePositions[armAutoPosition]);
+      if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[armAutoPosition]);
       armRotator.set(ControlMode.Position, armRotatePositions[armAutoPosition]);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////// the wall
@@ -604,13 +804,17 @@ public class Robot extends TimedRobot {
   }
 
   public void balanceRobot_DrivingBackward(){
-    double curPitch = navX.getPitch();
-    double p = 150;
+    double curPitch = Math.sin(Math.toRadians(navX.getPitch()));
+    double p = 4;
 
     double output = -curPitch * p;
 
-    output = output > 3000 ? 3000 : output;
-    output = output < -3000 ? -3000 : output;
+    int maxOut = 2500;
+
+    output = output * maxOut;
+
+    output = output > maxOut ? maxOut : output;
+    output = output < -maxOut ? -maxOut : output;
 
     leftDrive1.set(ControlMode.Velocity, output);
     rightDrive1.set(ControlMode.Velocity, output);
@@ -639,7 +843,7 @@ public class Robot extends TimedRobot {
     // }else if(output < maxLiftSpeedDown){
     //   output = maxLiftSpeedDown;
     // }
-    liftMotor.set(ControlMode.Position, goal);
+    if (liftAllowedToRun) liftMotor.set(ControlMode.Position, goal);
   }
   public void armRotatePID(double percentGoal){
     double goal = armMaxPosition * percentGoal/100;
@@ -840,6 +1044,24 @@ public class Robot extends TimedRobot {
       armWheels.set(ControlMode.PercentOutput, -power); 
     }else{
       armWheels.set(ControlMode.PercentOutput, 0);
+    }
+  }
+
+  //safety
+  public void liftSafetyShutoff(double timeToKill, double ampToKill){
+    double amps = Math.abs(liftMotor.getSupplyCurrent());
+    if (amps > ampToKill && !liftSafetyTriggered){
+      liftSafetyTriggered = true;
+      safetyTimerLift = timer.get() + timeToKill;
+    }
+
+    if (amps < ampToKill){
+      liftSafetyTriggered = false;
+    }
+
+    if (liftSafetyTriggered && timer.get() >= safetyTimerLift){
+      //this means we should shut off
+      liftAllowedToRun = false;
     }
   }
 }
