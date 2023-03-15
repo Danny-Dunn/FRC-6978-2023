@@ -124,6 +124,8 @@ public class Robot extends TimedRobot {
   boolean liftSafetyTriggered = false;
   double highestAmperage = 0;
 
+  private double targetAngle;
+
   //Collection<TalonFX> _fxes =  { new TalonFX(1), new TalonFX(2), new TalonFX(3) };
 
   //auto Variables
@@ -199,6 +201,12 @@ public class Robot extends TimedRobot {
     navX.enableBoardlevelYawReset(true);
 
     navX.calibrate();
+    while(navX.isCalibrating()) {
+
+    }
+
+    navX.enableBoardlevelYawReset(true);
+    navX.reset();
 
     isSticking = false;
 
@@ -279,6 +287,10 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("RightDriveVEL", rightDrive1.getSelectedSensorVelocity());
 
     SmartDashboard.putNumber("ArmAutoPosition", armAutoPosition);
+
+    SmartDashboard.putNumber("navX angle", navX.getAngle());
+    SmartDashboard.putNumber("navX yaw", navX.getYaw());
+    SmartDashboard.putNumber("target angle", targetAngle);
     SmartDashboard.putNumber("Lift Current", liftMotor.getSupplyCurrent());
     SmartDashboard.putNumber("Lift MAX Current", highestAmperage);
 
@@ -400,6 +412,7 @@ public class Robot extends TimedRobot {
         break;
       case 5:
         //drive backwards and lower into floor pickup position
+<<<<<<< HEAD
         if (timer.get() - autoTimer > 1){
           armMotor.set(ControlMode.Position, armSlidePositions[7]);
           armRotator.set(ControlMode.Position, armRotatePositions[7]);
@@ -407,6 +420,27 @@ public class Robot extends TimedRobot {
         }
         
         if (autoDriveToPositionVelocityDrive(320000, 8000, 8000, 0.0001)){
+=======
+        armMotor.set(ControlMode.Position, armSlidePositions[7]);
+        armRotator.set(ControlMode.Position, armRotatePositions[7]);
+        if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[7]);
+        driveShiftBool = false;
+        setBrakeMode(driveShiftBool);
+        distancePID(-300000, 0.001, 5000);;
+        autoStep++;
+        break;
+      case 7:
+        if(Math.abs(-300000 - ((leftDrive1.getSelectedSensorPosition() + rightDrive1.getSelectedSensorPosition()) / 2)) < 5000) {
+          autoStep++;
+        }
+        break;
+      case 8:
+        targetAngle = calculateAngleToTurn(180);
+        autoStep++;
+        break;
+      case 9:
+        if(Math.abs(yawPID(0.037, targetAngle, 2500)) < 5) {
+>>>>>>> d9ca3a0a06be3511cfc80c7dea6ba693764b2e02
           autoStep++;
         }
         break;
@@ -480,6 +514,79 @@ public class Robot extends TimedRobot {
         }
       break;
     }
+  }
+
+  public void auto2_DropPieceMoveBackwardBalanceBackward(){
+    switch(autoStep){
+      case 0:
+        if (armRotator.getSelectedSensorPosition() < armRotatePositions[2] * 0.9){
+          armRotator.set(ControlMode.Position, armRotatePositions[2]);
+          if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[1]);
+          armMotor.set(ControlMode.PercentOutput, -0.1);
+          gripperSolenoid.set(false);
+        }
+        else{
+          autoStep++;
+          armMotor.setSelectedSensorPosition(0);
+        }
+        break;
+      case 1:
+        armRotator.set(ControlMode.Position, armRotatePositions[2]);
+        autoStep++;
+        break;
+      case 2:
+        if (armRotator.getSelectedSensorPosition() > armRotatePositions[2] * 0.9){
+          armMotor.set(ControlMode.Position, armSlidePositions[2]);
+          //armPID(armSlidePositions[2]);
+          if (liftAllowedToRun) {liftMotor.set(ControlMode.Position, armLiftPositions[2]);}
+          autoStep++;
+          autoTimer = timer.get();
+        }
+        break;
+      case 3:
+        if (timer.get() - autoTimer > 1){
+          gripperSolenoid.set(true);
+          autoTimer = timer.get();
+          autoStep++;
+        }
+        break;
+      case 4:
+        if (timer.get() - autoTimer > 1){
+          autoStep++;
+        }
+        break;
+      case 5:
+        //drive backwards and lower into floor pickup position
+        armMotor.set(ControlMode.Position, armSlidePositions[7]);
+        armRotator.set(ControlMode.Position, armRotatePositions[7]);
+        if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[7]);
+        driveShiftBool = false;
+        setBrakeMode(driveShiftBool);
+        distancePID(-300000, 0.001, 5000);;
+        autoStep++;
+        break;
+      case 6:
+        if (navX.getPitch() < -8){
+          //activate balcncing code
+          autoStep++;
+        }
+        break;
+      case 7:
+        setBrakeMode(true);
+        balanceRobot_DrivingBackward();
+        break;
+    }
+  }
+
+  public void autoDriveToPositionVelocityDrive(int distanceGoal, int goalVelocity, int maxOut, double p){
+    double error = distanceGoal - ((leftDrive1.getSelectedSensorPosition() + rightDrive1.getSelectedSensorPosition()) / 2);
+    double output = error * goalVelocity * p;
+
+    output = output > maxOut ? maxOut : output;
+    output = output < -maxOut ? -maxOut : output;
+
+    leftDrive1.set(ControlMode.Velocity, output);
+    rightDrive1.set(ControlMode.Velocity, output);
   }
 
   public void auto2_DropPieceMoveBackwardBalanceBackward(){
@@ -622,11 +729,14 @@ public class Robot extends TimedRobot {
       }
     }
     else {
+      if(driveStick.getRawButtonPressed(14)) {
+        targetAngle = calculateAngleToTurn(180);
+      }
       if (driveStick.getRawButton(14)){
-        //balanceRobot_DrivingBackward();
-        //setBrakeMode(true);
+        /*balanceRobot_DrivingBackward();
+        setBrakeMode(true);*/
         driveShiftBool = false;
-        autoDriveToPositionVelocityDrive(300000, 5000, 5000, 0.0001);
+        yawPID(0.037, targetAngle, 2500);
       }
       else{
         driveButBetter();
@@ -886,8 +996,8 @@ public class Robot extends TimedRobot {
     }
   }
 
-  public void setBrakeMode(boolean setMe){
-    if (setMe == true){
+  public void setBrakeMode(boolean brake){
+    if (brake){
       leftDrive1.setNeutralMode(NeutralMode.Brake);
       leftDrive2.setNeutralMode(NeutralMode.Brake);
       rightDrive1.setNeutralMode(NeutralMode.Brake);
@@ -920,21 +1030,23 @@ public class Robot extends TimedRobot {
   @Override
   public void simulationPeriodic() {}
 
-  public void balancingDistancePID(double goal, double P, double D){
+  public void distancePID(double goal, double P, double maxSpeed){
     double position = (leftDrive1.getSelectedSensorPosition() + rightDrive1.getSelectedSensorPosition()) / 2;
     double error = goal - position;
 
+    double output = error * P * maxSpeed;
+
+    leftDrive1.set(ControlMode.Velocity, output);
+    rightDrive1.set(ControlMode.Velocity, output);
 
     if(error <= goal - 1000){
-      leftDrive1.set(ControlMode.PercentOutput, 0);
-      leftDrive2.set(ControlMode.PercentOutput, 0);
-      rightDrive1.set(ControlMode.PercentOutput, 0);
-      rightDrive2.set(ControlMode.PercentOutput, 0);
+      leftDrive1.set(ControlMode.Disabled, 0);
+      rightDrive1.set(ControlMode.Disabled, 0);
     }
   }
 
     
-   public void balancingPID(double P, double D, double max){
+  public void balancingPID(double P, double D, double max){
     double error = navX.getRoll();
     double demand = error * P;
 
@@ -943,6 +1055,39 @@ public class Robot extends TimedRobot {
 
     leftDrive1.set(ControlMode.PercentOutput, demand);
     rightDrive1.set(ControlMode.PercentOutput, demand);
+  }
+
+  public double yawPID(double P, double targetAngle, double maxSpeed) {
+    double error = navX.getAngle() - targetAngle;
+    double demand = error * P * maxSpeed;
+
+    demand = (demand > maxSpeed)? maxSpeed : demand;
+    demand = (demand < -maxSpeed)? -maxSpeed : demand;
+
+    SmartDashboard.putNumber("yaw target velocity", demand);
+
+    leftDrive1.set(ControlMode.Velocity, demand);
+    rightDrive1.set(ControlMode.Velocity, -demand);
+    return error;
+  }
+
+  public double calculateAngleToTurn(double desiredYaw) {
+    double realYaw = navX.getAngle();
+    double absYaw = angleToAbsYaw(realYaw);
+    double absDelta;
+
+    //determine if a left or right turn is more efficient
+    absDelta = desiredYaw - absYaw;
+    if(absDelta > 180) {
+      absDelta = absDelta - 360;
+    } else if (absDelta < -180) {
+      absDelta = absDelta + 360;
+    }
+    return absDelta + realYaw;
+  }
+
+  public double angleToAbsYaw(double angle) {
+    return (angle%360);
   }
 
   public void drive(){
