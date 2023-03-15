@@ -117,6 +117,8 @@ public class Robot extends TimedRobot {
   private double liftD;
   private double liftSetpointPos;
 
+  private double targetAngle;
+
   //Collection<TalonFX> _fxes =  { new TalonFX(1), new TalonFX(2), new TalonFX(3) };
 
   //auto Variables
@@ -175,6 +177,12 @@ public class Robot extends TimedRobot {
     navX = new AHRS();
 
     navX.calibrate();
+    while(navX.isCalibrating()) {
+
+    }
+
+    navX.enableBoardlevelYawReset(true);
+    navX.reset();
 
     isSticking = false;
 
@@ -255,6 +263,10 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("RightDriveVEL", rightDrive1.getSelectedSensorVelocity());
 
     SmartDashboard.putNumber("ArmAutoPosition", armAutoPosition);
+
+    SmartDashboard.putNumber("navX angle", navX.getAngle());
+    SmartDashboard.putNumber("navX yaw", navX.getYaw());
+    SmartDashboard.putNumber("target angle", targetAngle);
 
     //SmartDashboard.putNumber("ArmP", 0);
 
@@ -343,8 +355,24 @@ public class Robot extends TimedRobot {
         break;
       case 5:
         //drive backwards
-        leftDrive1.set(ControlMode.Velocity, 3000);
-        rightDrive1.set(ControlMode.Velocity, 3000);
+        driveShiftBool = false;
+        setBrakeMode(driveShiftBool);
+        distancePID(-300000, 0.001, 5000);;
+        autoStep++;
+        break;
+      case 6:
+        if(Math.abs(-300000 - ((leftDrive1.getSelectedSensorPosition() + rightDrive1.getSelectedSensorPosition()) / 2)) < 5000) {
+          autoStep++;
+        }
+        break;
+      case 7:
+        targetAngle = calculateAngleToTurn(180);
+        autoStep++;
+        break;
+      case 8:
+        if(Math.abs(yawPID(0.037, targetAngle, 2500)) < 5) {
+          autoStep++;
+        }
         break;
     }
   }
@@ -393,10 +421,14 @@ public class Robot extends TimedRobot {
       }
     }
     else {
+      if(driveStick.getRawButtonPressed(14)) {
+        targetAngle = calculateAngleToTurn(180);
+      }
       if (driveStick.getRawButton(14)){
-        balanceRobot_DrivingBackward();
-        setBrakeMode(true);
+        /*balanceRobot_DrivingBackward();
+        setBrakeMode(true);*/
         driveShiftBool = false;
+        yawPID(0.037, targetAngle, 2500);
       }
       else{
         //driveButBetter();
@@ -651,8 +683,8 @@ public class Robot extends TimedRobot {
     }
   }
 
-  public void setBrakeMode(boolean setMe){
-    if (setMe == true){
+  public void setBrakeMode(boolean brake){
+    if (brake){
       leftDrive1.setNeutralMode(NeutralMode.Brake);
       leftDrive2.setNeutralMode(NeutralMode.Brake);
       rightDrive1.setNeutralMode(NeutralMode.Brake);
@@ -685,21 +717,23 @@ public class Robot extends TimedRobot {
   @Override
   public void simulationPeriodic() {}
 
-  public void balancingDistancePID(double goal, double P, double D){
+  public void distancePID(double goal, double P, double maxSpeed){
     double position = (leftDrive1.getSelectedSensorPosition() + rightDrive1.getSelectedSensorPosition()) / 2;
     double error = goal - position;
 
+    double output = error * P * maxSpeed;
+
+    leftDrive1.set(ControlMode.Velocity, output);
+    rightDrive1.set(ControlMode.Velocity, output);
 
     if(error <= goal - 1000){
-      leftDrive1.set(ControlMode.PercentOutput, 0);
-      leftDrive2.set(ControlMode.PercentOutput, 0);
-      rightDrive1.set(ControlMode.PercentOutput, 0);
-      rightDrive2.set(ControlMode.PercentOutput, 0);
+      leftDrive1.set(ControlMode.Disabled, 0);
+      rightDrive1.set(ControlMode.Disabled, 0);
     }
   }
 
     
-   public void balancingPID(double P, double D, double max){
+  public void balancingPID(double P, double D, double max){
     double error = navX.getRoll();
     double demand = error * P;
 
@@ -708,6 +742,39 @@ public class Robot extends TimedRobot {
 
     leftDrive1.set(ControlMode.PercentOutput, demand);
     rightDrive1.set(ControlMode.PercentOutput, demand);
+  }
+
+  public double yawPID(double P, double targetAngle, double maxSpeed) {
+    double error = navX.getAngle() - targetAngle;
+    double demand = error * P * maxSpeed;
+
+    demand = (demand > maxSpeed)? maxSpeed : demand;
+    demand = (demand < -maxSpeed)? -maxSpeed : demand;
+
+    SmartDashboard.putNumber("yaw target velocity", demand);
+
+    leftDrive1.set(ControlMode.Velocity, demand);
+    rightDrive1.set(ControlMode.Velocity, -demand);
+    return error;
+  }
+
+  public double calculateAngleToTurn(double desiredYaw) {
+    double realYaw = navX.getAngle();
+    double absYaw = angleToAbsYaw(realYaw);
+    double absDelta;
+
+    //determine if a left or right turn is more efficient
+    absDelta = desiredYaw - absYaw;
+    if(absDelta > 180) {
+      absDelta = absDelta - 360;
+    } else if (absDelta < -180) {
+      absDelta = absDelta + 360;
+    }
+    return absDelta + realYaw;
+  }
+
+  public double angleToAbsYaw(double angle) {
+    return (angle%360);
   }
 
   public void drive(){
