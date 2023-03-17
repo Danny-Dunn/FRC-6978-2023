@@ -251,6 +251,9 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("ArmP", 0.181);   
 
     SmartDashboard.putNumber("shooter power (0-1)", 0.3); 
+
+    SmartDashboard.putNumber("Auto Type: ", 0); 
+    
   }
 
   @Override
@@ -335,6 +338,8 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     navX.reset();
+
+    autoType = SmartDashboard.getNumber("Auto Type: ", 0); 
 
     leftDrive1.setSelectedSensorPosition(0);
     rightDrive1.setSelectedSensorPosition(0);
