@@ -59,7 +59,7 @@ public class Robot extends TimedRobot {
   boolean manualMode = true;
 
   //auto stuff
-  int autoType = 2;
+  int autoType = 0;
   double autoTimer = 0;
 
 
@@ -176,7 +176,7 @@ public class Robot extends TimedRobot {
     leftDrive1.setNeutralMode(NeutralMode.Coast);
     leftDrive2.setNeutralMode(NeutralMode.Coast);
     rightDrive1.setNeutralMode(NeutralMode.Coast);
-    rightDrive2.setNeutralMode(NeutralMode.Coast);
+    rightDrive2.setNeutralMode(NeutralMode.Coast); 
 
     leftDrive1.setSensorPhase(true);
     rightDrive1.setSensorPhase(true);
@@ -185,9 +185,13 @@ public class Robot extends TimedRobot {
     leftDrive1.config_kI(0, 0.0003);
     leftDrive1.config_kD(0, 1);
 
+    leftDrive1.configClosedloopRamp(0.3);
+
     rightDrive1.config_kP(0, 0.01);
     rightDrive1.config_kI(0, 0.0003);
     rightDrive1.config_kD(0, 1);
+    
+    rightDrive1.configClosedloopRamp(0.3);
 
 
 
@@ -244,16 +248,17 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putNumber("Arm PID Increment %", 10);
 
-    SmartDashboard.putNumber("ArmP", 0.181);    
+    SmartDashboard.putNumber("ArmP", 0.181);   
+
+    SmartDashboard.putNumber("shooter power (0-1)", 0.3); 
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
 
-    //SmartDashboard.putNumber("shooter power (0-1)", 1);
     //SmartDashboard.putNumber("shooter runtime", 2); :)
-    power = SmartDashboard.getNumber("shooter power (0-1)", 1);
+    power = SmartDashboard.getNumber("shooter power (0-1)", 0.3);
     time = SmartDashboard.getNumber("shooter runtime", 2);
 
     angleP = SmartDashboard.getNumber("angleP", 0.00001);
@@ -412,7 +417,6 @@ public class Robot extends TimedRobot {
         break;
       case 5:
         //drive backwards and lower into floor pickup position
-<<<<<<< HEAD
         if (timer.get() - autoTimer > 1){
           armMotor.set(ControlMode.Position, armSlidePositions[7]);
           armRotator.set(ControlMode.Position, armRotatePositions[7]);
@@ -420,27 +424,6 @@ public class Robot extends TimedRobot {
         }
         
         if (autoDriveToPositionVelocityDrive(320000, 8000, 8000, 0.0001)){
-=======
-        armMotor.set(ControlMode.Position, armSlidePositions[7]);
-        armRotator.set(ControlMode.Position, armRotatePositions[7]);
-        if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[7]);
-        driveShiftBool = false;
-        setBrakeMode(driveShiftBool);
-        distancePID(-300000, 0.001, 5000);;
-        autoStep++;
-        break;
-      case 7:
-        if(Math.abs(-300000 - ((leftDrive1.getSelectedSensorPosition() + rightDrive1.getSelectedSensorPosition()) / 2)) < 5000) {
-          autoStep++;
-        }
-        break;
-      case 8:
-        targetAngle = calculateAngleToTurn(180);
-        autoStep++;
-        break;
-      case 9:
-        if(Math.abs(yawPID(0.037, targetAngle, 2500)) < 5) {
->>>>>>> d9ca3a0a06be3511cfc80c7dea6ba693764b2e02
           autoStep++;
         }
         break;
@@ -449,6 +432,7 @@ public class Robot extends TimedRobot {
           autoStep++;
           leftDrive1.set(ControlMode.PercentOutput, 0);
           rightDrive1.set(ControlMode.PercentOutput, 0);
+          armAutoPosition = 5;
         }
       break;
     }
@@ -511,6 +495,7 @@ public class Robot extends TimedRobot {
           autoStep++;
           leftDrive1.set(ControlMode.PercentOutput, 0);
           rightDrive1.set(ControlMode.PercentOutput, 0);
+          armAutoPosition = 5;
         }
       break;
     }
@@ -563,78 +548,6 @@ public class Robot extends TimedRobot {
         driveShiftBool = false;
         setBrakeMode(driveShiftBool);
         distancePID(-300000, 0.001, 5000);;
-        autoStep++;
-        break;
-      case 6:
-        if (navX.getPitch() < -8){
-          //activate balcncing code
-          autoStep++;
-        }
-        break;
-      case 7:
-        setBrakeMode(true);
-        balanceRobot_DrivingBackward();
-        break;
-    }
-  }
-
-  public void autoDriveToPositionVelocityDrive(int distanceGoal, int goalVelocity, int maxOut, double p){
-    double error = distanceGoal - ((leftDrive1.getSelectedSensorPosition() + rightDrive1.getSelectedSensorPosition()) / 2);
-    double output = error * goalVelocity * p;
-
-    output = output > maxOut ? maxOut : output;
-    output = output < -maxOut ? -maxOut : output;
-
-    leftDrive1.set(ControlMode.Velocity, output);
-    rightDrive1.set(ControlMode.Velocity, output);
-  }
-
-  public void auto2_DropPieceMoveBackwardBalanceBackward(){
-    switch(autoStep){
-      case 0:
-        if (armRotator.getSelectedSensorPosition() < armRotatePositions[2] * 0.9){
-          armRotator.set(ControlMode.Position, armRotatePositions[2]);
-          if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[1]);
-          armMotor.set(ControlMode.PercentOutput, -0.1);
-          gripperSolenoid.set(false);
-        }
-        else{
-          autoStep++;
-          armMotor.setSelectedSensorPosition(0);
-        }
-        break;
-      case 1:
-        armRotator.set(ControlMode.Position, armRotatePositions[2]);
-        autoStep++;
-        break;
-      case 2:
-        if (armRotator.getSelectedSensorPosition() > armRotatePositions[2] * 0.9){
-          armMotor.set(ControlMode.Position, armSlidePositions[2]);
-          //armPID(armSlidePositions[2]);
-          if (liftAllowedToRun) {liftMotor.set(ControlMode.Position, armLiftPositions[2]);}
-          autoStep++;
-          autoTimer = timer.get();
-        }
-        break;
-      case 3:
-        if (timer.get() - autoTimer > 1){
-          gripperSolenoid.set(true);
-          autoTimer = timer.get();
-          autoStep++;
-        }
-        break;
-      case 4:
-        if (timer.get() - autoTimer > 1){
-          autoStep++;
-        }
-        break;
-      case 5:
-        //drive backwards and lower into floor pickup position
-        armMotor.set(ControlMode.Position, armSlidePositions[7]);
-        armRotator.set(ControlMode.Position, armRotatePositions[7]);
-        if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[7]);
-        leftDrive1.set(ControlMode.Velocity, 7000);
-        rightDrive1.set(ControlMode.Velocity, 7000);
         autoStep++;
         break;
       case 6:
@@ -733,10 +646,10 @@ public class Robot extends TimedRobot {
         targetAngle = calculateAngleToTurn(180);
       }
       if (driveStick.getRawButton(14)){
-        /*balanceRobot_DrivingBackward();
-        setBrakeMode(true);*/
+        balanceRobot_DrivingBackward();
+        setBrakeMode(true);
         driveShiftBool = false;
-        yawPID(0.037, targetAngle, 2500);
+        //yawPID(0.037, targetAngle, 2500);
       }
       else{
         driveButBetter();
