@@ -97,7 +97,7 @@ public class Robot extends TimedRobot {
   //
   //37149
 
-  double[] armRotatePositions = {0, 229174, 339000, 373000, 405000, 40149, 365000, -79753};
+  double[] armRotatePositions = {0, 229174, 359000, 373000, 405000, 40149, 365000, -79753};
   double[] armLiftPositions = {0, -531184, -531000, -358000, -358000, 0, -375000, -640000};
   double[] armSlidePositions = {0, 0, 10051, 17000, 19900, 0, 0, 0};
 
@@ -202,12 +202,8 @@ public class Robot extends TimedRobot {
     operatorStick = new Joystick(1);
 
     navX = new AHRS();
-    navX.enableBoardlevelYawReset(true);
 
     navX.calibrate();
-    while(navX.isCalibrating()) {
-
-    }
 
     navX.enableBoardlevelYawReset(true);
     navX.reset();
@@ -253,6 +249,10 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("shooter power (0-1)", 0.3); 
 
     SmartDashboard.putNumber("Auto Type: ", 0); 
+
+    armRotator.setSelectedSensorPosition(0);
+    armMotor.setSelectedSensorPosition(0);
+    liftMotor.setSelectedSensorPosition(0);
     
   }
 
@@ -318,7 +318,7 @@ public class Robot extends TimedRobot {
       liftMotor.set(ControlMode.Disabled, 0);
     }
 
-    SmartDashboard.putNumber("Auto Step", autoStep);
+    //SmartDashboard.putNumber("Auto Step", autoStep);
 
     SmartDashboard.putNumber("LeftDrive POS", leftDrive1.getSelectedSensorPosition());
     SmartDashboard.putNumber("rightDrive POS", rightDrive1.getSelectedSensorPosition());
@@ -337,9 +337,13 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    armRotator.setSelectedSensorPosition(0);
+    armMotor.setSelectedSensorPosition(0);
+    liftMotor.setSelectedSensorPosition(0);
+
     navX.reset();
 
-    autoType = SmartDashboard.getNumber("Auto Type: ", 0); 
+    autoType = (int)SmartDashboard.getNumber("Auto Type: ", 0); 
 
     leftDrive1.setSelectedSensorPosition(0);
     rightDrive1.setSelectedSensorPosition(0);
@@ -367,14 +371,16 @@ public class Robot extends TimedRobot {
      * (ex. 2-2-1 auto is scoring a bottom layer piece, driving around the switch and then balancing from the other side)
      */
     switch(autoType){
-      case 0:
+      case 1:
         auto1_DropPieceMoveBackwardNoBalanceLeftSide();
         break;
-      case 1:
+      case 2:
         auto2_DropPieceMoveBackwardBalanceBackward();
         break;
-      case 2:
+      case 3:
         auto1_DropPieceMoveBackwardNoBalanceRightSide();
+        break;
+      default:
         break;
     }
     
@@ -552,12 +558,14 @@ public class Robot extends TimedRobot {
         if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[7]);
         driveShiftBool = false;
         setBrakeMode(driveShiftBool);
-        distancePID(-300000, 0.001, 5000);;
+        leftDrive1.set(ControlMode.Velocity, 4500);
+        rightDrive1.set(ControlMode.Velocity, 4500);
         autoStep++;
         break;
       case 6:
         if (navX.getPitch() < -8){
-          //activate balcncing code
+          leftDrive1.set(ControlMode.Disabled, 0);
+          rightDrive1.set(ControlMode.Disabled, 0);
           autoStep++;
         }
         break;
@@ -832,11 +840,11 @@ public class Robot extends TimedRobot {
 
   public void balanceRobot_DrivingBackward(){
     double curPitch = Math.sin(Math.toRadians(navX.getPitch()));
-    double p = 4;
+    double p = 2;
 
     double output = -curPitch * p;
 
-    int maxOut = 2500;
+    int maxOut = 2000;
 
     output = output * maxOut;
 
