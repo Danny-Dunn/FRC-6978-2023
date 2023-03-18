@@ -815,7 +815,7 @@ public class Robot extends TimedRobot {
           armAutoPosition = 3;
         }
         else if(operatorStick.getRawButton(8)){
-          armAutoPosition = 4;
+          armAutoPosition = 4; 
         }
         else if(operatorStick.getPOV() == 180){
           armAutoPosition = 5;
