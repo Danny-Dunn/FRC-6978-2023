@@ -126,6 +126,8 @@ public class Robot extends TimedRobot {
 
   private double targetAngle;
 
+  boolean slowTurning;
+
   //Collection<TalonFX> _fxes =  { new TalonFX(1), new TalonFX(2), new TalonFX(3) };
 
   //auto Variables
@@ -314,9 +316,7 @@ public class Robot extends TimedRobot {
       highestAmperage = liftMotor.getSupplyCurrent();
     }
 
-    if (!liftAllowedToRun){
-      liftMotor.set(ControlMode.Disabled, 0);
-    }
+    
 
     //SmartDashboard.putNumber("Auto Step", autoStep);
 
@@ -324,6 +324,8 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("rightDrive POS", rightDrive1.getSelectedSensorPosition());
 
     SmartDashboard.putNumber("Yaw", navX.getAngle());
+
+    SmartDashboard.putBoolean("Slow Turning", slowTurning);
 
   }
 
@@ -347,6 +349,8 @@ public class Robot extends TimedRobot {
 
     leftDrive1.setSelectedSensorPosition(0);
     rightDrive1.setSelectedSensorPosition(0);
+
+    liftAllowedToRun = true;
   }
 
   /** This function is called periodically during autonomous. */
@@ -382,6 +386,10 @@ public class Robot extends TimedRobot {
         break;
       default:
         break;
+    }
+
+    if (!liftAllowedToRun){
+      liftMotor.set(ControlMode.Disabled, 0);
     }
     
   }
@@ -553,25 +561,31 @@ public class Robot extends TimedRobot {
         break;
       case 5:
         //drive backwards and lower into floor pickup position
-        armMotor.set(ControlMode.Position, armSlidePositions[7]);
-        armRotator.set(ControlMode.Position, armRotatePositions[7]);
-        if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[7]);
+        armMotor.set(ControlMode.Position, armSlidePositions[0]);
+        armRotator.set(ControlMode.Position, armRotatePositions[0]);
+        if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[0]);
         driveShiftBool = false;
         setBrakeMode(driveShiftBool);
-        leftDrive1.set(ControlMode.Velocity, 4500);
-        rightDrive1.set(ControlMode.Velocity, 4500);
+        leftDrive1.set(ControlMode.Velocity, 5600);
+        rightDrive1.set(ControlMode.Velocity, 5600);
         autoStep++;
         break;
       case 6:
-        if (navX.getPitch() < -8){
-          leftDrive1.set(ControlMode.Disabled, 0);
-          rightDrive1.set(ControlMode.Disabled, 0);
+        if (autoDriveToPositionVelocityDrive(180000, 6500, 6500, 0.0001)){
+        //if (navX.getPitch() < -8){
+          //leftDrive1.set(ControlMode.Disabled, 0);
+          //rightDrive1.set(ControlMode.Disabled, 0);
           autoStep++;
+          
+          autoTimer = timer.get();
         }
         break;
       case 7:
-        setBrakeMode(true);
-        balanceRobot_DrivingBackward();
+      
+        //if (timer.get() - autoTimer > 1){
+          setBrakeMode(true);
+          balanceRobot_DrivingBackward(true);
+        //}
         break;
     }
   }
@@ -623,7 +637,8 @@ public class Robot extends TimedRobot {
     brakeStatus = false;
     setBrakeMode(false);
 
-    liftAllowedToRun = SmartDashboard.getBoolean("Lift Allowed ON:", false);
+    liftAllowedToRun = true;
+    manualMode = true;
 
     //armMotor.setSelectedSensorPosition(0);
 
@@ -640,6 +655,7 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
+    slowTurning = driveStick.getRawButton(5);
 
     if(driveStick.getRawButton(30)){
       
@@ -659,7 +675,7 @@ public class Robot extends TimedRobot {
         targetAngle = calculateAngleToTurn(180);
       }
       if (driveStick.getRawButton(14)){
-        balanceRobot_DrivingBackward();
+        balanceRobot_DrivingBackward(false);
         setBrakeMode(true);
         driveShiftBool = false;
         //yawPID(0.037, targetAngle, 2500);
@@ -676,6 +692,7 @@ public class Robot extends TimedRobot {
 
     }
 
+
     //if(driveStick.getRawButtonPressed(10)){
       //fastDriving = !fastDriving;
     //}
@@ -687,7 +704,7 @@ public class Robot extends TimedRobot {
     if(driveStick.getRawButtonPressed(10)){
       driveShiftBool = !driveShiftBool;
     }
-    driveGearShiftSolenoid.set(driveShiftBool);
+    driveGearShiftSolenoid.set(false);
 
 
     if(operatorStick.getRawButtonPressed(4)){
@@ -789,8 +806,7 @@ public class Robot extends TimedRobot {
       }
       
       
-
-      if (liftAllowedToRun) liftMotor.set(ControlMode.PercentOutput, -operatorStick.getRawAxis(3));
+      liftMotor.set(ControlMode.PercentOutput, -operatorStick.getRawAxis(3));
 
       armRotator.set(ControlMode.PercentOutput, -Math.pow(operatorStick.getRawAxis(1), 3));
       //auto arm stuff
@@ -830,21 +846,23 @@ public class Robot extends TimedRobot {
       //double armSlideGoalFixed = 
       //armPID(armSlidePositions[armAutoPosition]);
       armMotor.set(ControlMode.Position, armSlidePositions[armAutoPosition]);
-      if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[armAutoPosition]);
+      liftMotor.set(ControlMode.Position, armLiftPositions[armAutoPosition]);
       armRotator.set(ControlMode.Position, armRotatePositions[armAutoPosition]);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////// the wall
 
     }
+
   }
 
-  public void balanceRobot_DrivingBackward(){
+  public void balanceRobot_DrivingBackward(boolean halfSpeed){
     double curPitch = Math.sin(Math.toRadians(navX.getPitch()));
     double p = 2;
 
     double output = -curPitch * p;
 
     int maxOut = 2000;
+    if (halfSpeed) maxOut = 1000;
 
     output = output * maxOut;
 
@@ -1042,8 +1060,10 @@ public class Robot extends TimedRobot {
     //max goal = -20000
     double goal = 20000;
 
+    double xdivisor = (slowTurning)? 6 : 3;
+
     //Negative X for 2023 practice bot, positive X for 2022 comp bot
-    x = -driveStick.getRawAxis(0) / 3;
+    x = -driveStick.getRawAxis(0) / xdivisor;
     y = (driveStick.getRawAxis(3) + 1 )/2 - (driveStick.getRawAxis(4) + 1 )/2 ;
 
     //x = x * x *x; 
@@ -1096,7 +1116,7 @@ public class Robot extends TimedRobot {
 
     if (liftSafetyTriggered && timer.get() >= safetyTimerLift){
       //this means we should shut off
-      //liftAllowedToRun = false;
+      liftAllowedToRun = false;
       manualMode = true;
     }
   }
