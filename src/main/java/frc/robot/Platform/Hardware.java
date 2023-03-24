@@ -67,6 +67,8 @@ public class Hardware {
 
         //Arm motors
 
+        Hardware.armLiftMotor.setNeutralMode(NeutralMode.Brake);
+
         armLiftMotor.setSelectedSensorPosition(Constants.Arm.liftStartingPosition);
 
         armLiftMotor.config_kP(0, Constants.Arm.lift_kP);

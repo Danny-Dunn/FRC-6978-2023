@@ -108,7 +108,6 @@ public class Constants {
         public static int fastWheelsOut = 3;
     }
 
-    //FIXME: Operator controls
     public static class OperatorControls {
         public static int zeroArm = 10;
 

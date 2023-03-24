@@ -5,16 +5,10 @@ import frc.robot.Framework.IPeriodicTask;
 
 public class Tasks {
     public static DifferentialDrive differentialDrive = new DifferentialDrive();
-    public static ArmSlide armSlide = new ArmSlide();
-    public static ArmCable armCable = new ArmCable();
-    public static ArmLift  armLift  = new ArmLift();
-    public static ArmButtons armButtons = new ArmButtons();
+    public static Arm arm = new Arm();
 
     public static IPeriodicTask[] teleopTasks = {
         (IPeriodicTask)differentialDrive,
-        (IPeriodicTask)armSlide,
-        (IPeriodicTask)armCable,
-        (IPeriodicTask)armLift,
-        (IPeriodicTask)armButtons
+        (IPeriodicTask)arm
     };
 }
