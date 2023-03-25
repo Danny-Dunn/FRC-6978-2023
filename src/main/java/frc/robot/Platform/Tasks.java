@@ -6,6 +6,7 @@ import frc.robot.Framework.IPeriodicTask;
 public class Tasks {
     public static DifferentialDrive differentialDrive = new DifferentialDrive();
     public static Arm arm = new Arm();
+    public static Telemetry telemetry = new Telemetry();
 
     public static IPeriodicTask[] teleopTasks = {
         (IPeriodicTask)differentialDrive,

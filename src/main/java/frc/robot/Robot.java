@@ -11,7 +11,15 @@ public class Robot extends TimedRobot{
     @Override
     public void robotInit() {
         Hardware.configureHardware();
+        Tasks.telemetry.openSession();
         
+    }
+
+    @Override
+    protected void loopFunc() {
+        Tasks.telemetry.openFrame();
+        super.loopFunc();
+        Tasks.telemetry.closeFrame();
     }
 
     @Override
@@ -30,5 +38,11 @@ public class Robot extends TimedRobot{
     @Override
     public void disabledInit() {
         Schedulers.teleopScheduler.clear();
+    }
+
+    @Override
+    public void endCompetition() {
+        Tasks.telemetry.closeSession();
+        super.endCompetition();
     }
 }

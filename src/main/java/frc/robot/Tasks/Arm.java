@@ -1,16 +1,20 @@
 package frc.robot.Tasks;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Framework.IPeriodicTask;
 import frc.robot.Framework.JoystickHelpers;
 import frc.robot.Framework.RunContext;
 import frc.robot.Platform.Constants;
 import frc.robot.Platform.Globals;
 import frc.robot.Platform.Hardware;
+import frc.robot.Platform.Tasks;
 import frc.robot.Platform.Constants.OperatorControls;
 
-public class Arm {
+public class Arm implements IPeriodicTask {
     double liftTarget, cableTarget, slideTarget;
     boolean gripperState;
 
@@ -22,9 +26,9 @@ public class Arm {
     public void onStop() {}
 
     public void onLoop(RunContext context) {
-        SmartDashboard.putNumber("ArmLiftPosition", getLiftPosition());
-        SmartDashboard.putNumber("ArmCablePosition", getCablePosition());
-        SmartDashboard.putNumber("ArmSlidePosition", getSlidePosition());
+        Tasks.telemetry.pushDouble("ArmLiftPosition", getLiftPosition());
+        Tasks.telemetry.pushDouble("ArmCablePosition", getCablePosition());
+        Tasks.telemetry.pushDouble("ArmSlidePosition", getSlidePosition());
 
         if(Hardware.operatorStick.getRawButtonReleased(OperatorControls.zeroArm)) {
             Hardware.armCableMotor.setSelectedSensorPosition(0);
@@ -36,7 +40,7 @@ public class Arm {
             Globals.armAutomation = !Globals.armAutomation;
         }
 
-        SmartDashboard.putBoolean("Arm Automation", Globals.armAutomation);
+        Tasks.telemetry.pushBoolean("Arm Automation", Globals.armAutomation);
 
         //Claw open/close
         if(Hardware.operatorStick.getRawButtonPressed(OperatorControls.toggleClaw)) {
@@ -73,7 +77,7 @@ public class Arm {
                     Hardware.operatorStick.getRawAxis(Constants.OperatorControls.liftAxis), 
                     0.1)
             );
-            
+
             //cable
             Hardware.armCableMotor.set(
                 ControlMode.PercentOutput,
@@ -134,8 +138,8 @@ public class Arm {
         position = (position > maximum)? maximum:position;
         position = (position < minimum)? minimum:position;
 
-        SmartDashboard.putNumber("Lift min position", minimum);
-        SmartDashboard.putNumber("Lift maximum position", maximum);
+        Tasks.telemetry.pushDouble("Lift min position", minimum);
+        Tasks.telemetry.pushDouble("Lift maximum position", maximum);
 
         Hardware.armLiftMotor.set(ControlMode.Position, position);
     }
@@ -179,9 +183,9 @@ public class Arm {
         position = (position > maximum)? maximum:position;
         position = (position < minimum)? minimum:position;
 
-        SmartDashboard.putNumber("Cable min position", minimum);
-        SmartDashboard.putNumber("Cable maximum position", maximum);
-        SmartDashboard.putNumber("Cable target position", position);
+        Tasks.telemetry.pushDouble("Cable min position", minimum);
+        Tasks.telemetry.pushDouble("Cable maximum position", maximum);
+        Tasks.telemetry.pushDouble("Cable target position", position);
 
 
         Hardware.armCableMotor.set(ControlMode.Position, position);
@@ -226,5 +230,12 @@ public class Arm {
 
     public double getSlideTarget() {
         return slideTarget;
+    }
+
+    public List<RunContext> getAllowedRunContexts() { 
+        return new ArrayList<RunContext>(){{
+            add(RunContext.autonomous);
+            add(RunContext.teleoperated);
+        }};
     }
 }

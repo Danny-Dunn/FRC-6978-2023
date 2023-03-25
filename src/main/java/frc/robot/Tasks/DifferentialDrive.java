@@ -6,12 +6,12 @@ import java.util.List;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Framework.IPeriodicTask;
 import frc.robot.Framework.PIDController;
 import frc.robot.Framework.RunContext;
 import frc.robot.Platform.Constants;
 import frc.robot.Platform.Hardware;
+import frc.robot.Platform.Tasks;
 
 public class DifferentialDrive implements IPeriodicTask{
     enum DriveMode {
@@ -57,8 +57,9 @@ public class DifferentialDrive implements IPeriodicTask{
             balance();
         }
 
+        //FIXME: what was this meant to do???
         if(Hardware.driverStick.getRawButtonReleased(Constants.DriverControls.balance)) {
-            useStick();
+            //useStick();
         }
         
         switch (mode) {
@@ -74,6 +75,7 @@ public class DifferentialDrive implements IPeriodicTask{
     }
 
     public void useStick() {
+        Tasks.telemetry.pushEvent("DifferentialDrive.EnterStick");
         setBrake(false);
         mode = DriveMode.stick;
     }
@@ -103,8 +105,8 @@ public class DifferentialDrive implements IPeriodicTask{
         x *= Constants.Drive.xMultiplier;
         y *= Constants.Drive.yMultiplier;
 
-        SmartDashboard.putNumber("DriveX", x);
-        SmartDashboard.putNumber("DriveY", y);
+        Tasks.telemetry.pushDouble("DriveX", x);
+        Tasks.telemetry.pushDouble("DriveY", y);
 
         setDrives(x, y);        
     }
@@ -117,7 +119,8 @@ public class DifferentialDrive implements IPeriodicTask{
     }
 
     public void balance() {
-        
+        Tasks.telemetry.pushEvent("DifferentialDrive.EnterBalance");
+
         balancingYawController.init();
         balancingPitchController.init();
         //target perfectly flat
@@ -143,16 +146,23 @@ public class DifferentialDrive implements IPeriodicTask{
             x = -Constants.Drive.maxY;
         }
         
+        double leftSpeed = (y + x)*Constants.Drive.maxVelocity;
+        double rightSpeed = (y - x)*Constants.Drive.maxVelocity;
+
         if(x == 0 && y == 0) {
             Hardware.leftDrive1.set(ControlMode.Disabled, 0);
             Hardware.rightDrive1.set(ControlMode.Disabled, 0);
         } else {
-            Hardware.leftDrive1.set(ControlMode.Velocity, (y + x)*Constants.Drive.maxVelocity );
-            Hardware.rightDrive1.set(ControlMode.Velocity, (y - x)*Constants.Drive.maxVelocity);
+            Hardware.leftDrive1.set(ControlMode.Velocity, leftSpeed);
+            Hardware.rightDrive1.set(ControlMode.Velocity, rightSpeed);
+            Tasks.telemetry.pushDouble("DifferentialDrive.leftVelocityTarget", leftSpeed);
+            Tasks.telemetry.pushDouble("DifferentialDrive.rightVelocityTarget", rightSpeed);
         }
     }
 
     void setBrake(boolean brake) {
+        Tasks.telemetry.pushEvent("DifferentialDrive.SetBrakeMode");
+        Tasks.telemetry.pushBoolean("DifferentialDrive.BrakeMode", brake);
         NeutralMode neutralMode = brake? NeutralMode.Brake : NeutralMode.Coast; 
         Hardware.leftDrive1.setNeutralMode(neutralMode);
         Hardware.leftDrive2.setNeutralMode(neutralMode);
@@ -161,6 +171,7 @@ public class DifferentialDrive implements IPeriodicTask{
     }
 
     public void setGearShift(boolean highGear) {
+        Tasks.telemetry.pushEvent("DifferentialDrive.ShiftGears");
         gearShiftState = highGear;
         Hardware.driveGearShiftSolenoid.set(highGear);
     }
