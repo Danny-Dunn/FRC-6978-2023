@@ -154,9 +154,13 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
+<<<<<<< HEAD
     myLightOption = LightOption.off;
     canifier = new CANifier(40);
 
+=======
+    //Drive Falcons
+>>>>>>> 055621723d51d88ba2e5f3e50f15d2a91c492621
     leftDrive1 = new TalonFX(1);
     leftDrive2 = new TalonFX(2);
     rightDrive1 = new TalonFX(3);
@@ -177,6 +181,7 @@ public class Robot extends TimedRobot {
       0.2
     ));
 
+    //Arm Motor Talon
     //testMotor = new TalonSRX(24); //this was on the comp bot for the rotating arm
     armMotor = new TalonSRX(11);
     armMotor.setInverted(true);
@@ -185,18 +190,23 @@ public class Robot extends TimedRobot {
     armMotor.configClosedloopRamp(0.2);
     //armMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 10, 12, ))
 
+    //Arm Rotator Falcon
     armRotator = new TalonFX(50);
     armRotator.setInverted(false);
 
+    //Arm Wheel/Intake Talon
     armWheels = new TalonSRX(24);
     armWheels.setInverted(true); //NEEDS TO BE CHANGED ON PRACTICE BOT
 
+    //invert the right drives
     rightDrive1.setInverted(true);
     rightDrive2.setInverted(true);
 
+    //set the second drive of each side to be a follower of the first drive
     leftDrive2.set(ControlMode.Follower, 1);
     rightDrive2.set(ControlMode.Follower, 3);
 
+    //set all drive falcons to not break mode
     leftDrive1.setNeutralMode(NeutralMode.Coast);
     leftDrive2.setNeutralMode(NeutralMode.Coast);
     rightDrive1.setNeutralMode(NeutralMode.Coast);
@@ -236,6 +246,7 @@ public class Robot extends TimedRobot {
 
     brakeStatus = true;
 
+    //Pneumatics 
     compressor = new Compressor(PneumaticsModuleType.CTREPCM);
     driveGearShiftSolenoid = new Solenoid(PneumaticsModuleType.CTREPCM, 0);
     gripperSolenoid = new Solenoid(PneumaticsModuleType.CTREPCM, 1);
@@ -262,7 +273,7 @@ public class Robot extends TimedRobot {
     liftMaxPosition = -800000;
     armMaxPosition = 20000;
 
-        //lift pid
+    //lift pid
     SmartDashboard.putNumber("Lift P", liftP);
     SmartDashboard.putNumber("Lift I", liftI);
     SmartDashboard.putNumber("Lift D", liftD);
@@ -438,14 +449,17 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    //Set rotate, lift and slide to 0
     armRotator.setSelectedSensorPosition(0);
     armMotor.setSelectedSensorPosition(0);
     liftMotor.setSelectedSensorPosition(0);
 
+    //reset navx
     navX.reset();
 
     autoType = (int)SmartDashboard.getNumber("Auto Type: ", 0); 
 
+    //Set drive positions to 0
     leftDrive1.setSelectedSensorPosition(0);
     rightDrive1.setSelectedSensorPosition(0);
 
@@ -495,6 +509,7 @@ public class Robot extends TimedRobot {
     
   }
 
+  //Drop cone, move backwards, rotate -173 degrees
   public void auto1_DropPieceMoveBackwardNoBalanceLeftSide(){
     switch(autoStep){
       case 0:
@@ -558,6 +573,7 @@ public class Robot extends TimedRobot {
     }
   }
 
+  //Drop cone, move backwards, rotate 167 degrees
   public void auto1_DropPieceMoveBackwardNoBalanceRightSide(){
     switch(autoStep){
       case 0:
@@ -621,6 +637,7 @@ public class Robot extends TimedRobot {
     }
   }
 
+  //Drop cone, move backwards, balance on charge station
   public void auto2_DropPieceMoveBackwardBalanceBackward(){
     switch(autoStep){
       case 0:
@@ -691,6 +708,7 @@ public class Robot extends TimedRobot {
     }
   }
 
+  //Drop cone, move backwards over the charging station past community line, balance
   public void auto4_SwitchBalance(){
     switch(autoStep){
       case 0:
@@ -875,15 +893,11 @@ public class Robot extends TimedRobot {
 
     }
 
-
-    //if(driveStick.getRawButtonPressed(10)){
-      //fastDriving = !fastDriving;
-    //}
     ////////////////////////
     //pneumatics 
     /////////////
 
-    
+    //gear shifting
     if(driveStick.getRawButtonPressed(10)){
       driveShiftBool = !driveShiftBool;
 
@@ -892,30 +906,20 @@ public class Robot extends TimedRobot {
     }
     driveGearShiftSolenoid.set(driveShiftBool);
 
-
-    
-
-
+    //Gripper controls
     if(operatorStick.getRawButtonPressed(4)){
       gripperBool = !gripperBool;
     }
     gripperSolenoid.set(gripperBool);
      
-    // if(driveStick.getRawButtonPressed(3)){
-    //     if(compState == false){
-    //      compressor.disable();
-    //      }
-    //      else if(compState == true){
-    //        compressor.enableDigital();
-    //      } 
-    //      compState = !compState;  
-    // }
+    //Arm wheels/shooter wheels
+    //Get flag
     if(driveStick.getRawButtonPressed(3)){
       shooterFlag = timer.get() + time;
     }
+    //Shooter wheel control
     if(driveStick.getRawButton(3)){ //out
       shooter();
-      // armWheels.set(ControlMode.PercentOutput, -1);
       armWheelsOn = false;
      }else if(driveStick.getRawButton(4)){ //in a lot
       armWheels.set(ControlMode.PercentOutput, 0.8);
@@ -932,7 +936,7 @@ public class Robot extends TimedRobot {
         }
       }
 
-
+    //Set lift, rotator and extender values to 0
     if (operatorStick.getRawButtonReleased(10)){
       armMotor.setSelectedSensorPosition(0);
       armRotator.setSelectedSensorPosition(0);
@@ -941,77 +945,57 @@ public class Robot extends TimedRobot {
     }
 
     if (manualMode){
-      
-      /*if (operatorStick.getRawButton(6)){
-        armSlideGoal = 9700;
-      }
-      else if (operatorStick.getRawButton(8)){
-        armSlideGoal = 19000;
-      }
-      else if (operatorStick.getRawButton(5)){
-        armSlideGoal = 0;
-      }*/
-      if (operatorStick.getRawButton(6)){
+      //Move arm in or out
+      if (operatorStick.getRawButton(6)){ //arm out
         armMotor.set(ControlMode.PercentOutput, 0.4);
       }
-      else if (operatorStick.getRawButton(5)){
+      else if (operatorStick.getRawButton(5)){ //arm in
         armMotor.set(ControlMode.PercentOutput, -0.4);
       }
       else{
-        //armPID(armSlideGoal);
         armMotor.set(ControlMode.PercentOutput, 0);
       }
       
-      
+      //Move lift up or down using right stick
       liftMotor.set(ControlMode.PercentOutput, -operatorStick.getRawAxis(3)/2);
 
+      //Move rotator up or down using the left stick
       armRotator.set(ControlMode.PercentOutput, -Math.pow(operatorStick.getRawAxis(1), 3));
-      //auto arm stuff
-
-
     }
     else{ //not in manual mode
-
-
-      //arm rotation
-      
+      //Arm, lift and extender positions
       if(operatorStick.getRawButton(5)){
-        armAutoPosition = 1;
+        armAutoPosition = 1; // cube mid
       }
       if(armAutoPosition == 1 || armAutoPosition == 5) {
         if(operatorStick.getRawButton(1)){
-          armAutoPosition = 0;
+          armAutoPosition = 0; //park
         }else if(operatorStick.getRawButton(6)){
-          armAutoPosition = 2;
+          armAutoPosition = 2; //cone mid
         }
         else if(operatorStick.getRawButton(7)){
-          armAutoPosition = 3;
+          armAutoPosition = 3; //cube high
         }
         else if(operatorStick.getRawButton(8)){
-          armAutoPosition = 4; 
+          armAutoPosition = 4; //cone high
         }
         else if(operatorStick.getPOV() == 180){
-          armAutoPosition = 5;
+          armAutoPosition = 5; // partial park
         } else if (operatorStick.getRawButton(3)) {
-          armAutoPosition = 6;
+          armAutoPosition = 6; // floor pickup
         } else if (operatorStick.getRawButton(2)) {
-          armAutoPosition = 7;
+          armAutoPosition = 7; // station pickup
         }
       }
 
-      //armMotor.set(ControlMode.Position, armSlidePositions[armAutoPosition]);
-      //double armSlideGoalFixed = 
-      //armPID(armSlidePositions[armAutoPosition]);
+      //Set lift, rotator and extender to positions given above
       armMotor.set(ControlMode.Position, armSlidePositions[armAutoPosition]);
       liftMotor.set(ControlMode.Position, armLiftPositions[armAutoPosition]);
       armRotator.set(ControlMode.Position, armRotatePositions[armAutoPosition]);
-
-////////////////////////////////////////////////////////////////////////////////////////////////// the wall
-
     }
-
   }
 
+  //drive backwards balancing 
   public void balanceRobot_DrivingBackward(boolean halfSpeed){
     double curPitch = Math.sin(Math.toRadians(navX.getPitch()));
     double p = 2;
@@ -1030,7 +1014,7 @@ public class Robot extends TimedRobot {
     rightDrive1.set(ControlMode.Velocity, output);
   }
 
-  //FIXME: use internal motor PID
+  //Arm PID 
   public void armPID(double Goal){
     double error = Goal - armMotor.getSelectedSensorPosition();
     double p = 0.00025;
@@ -1043,6 +1027,7 @@ public class Robot extends TimedRobot {
     armMotor.set(ControlMode.PercentOutput, output);
   }
 
+  //Lift PID
   public void liftPID(double percentGoal){
     double goal = liftMaxPosition * percentGoal/100;
     // double error = goal - liftMotor.getSelectedSensorPosition();
@@ -1055,13 +1040,15 @@ public class Robot extends TimedRobot {
     // }
     if (liftAllowedToRun) liftMotor.set(ControlMode.Position, goal);
   }
+
+  //Arm rotate PID
   public void armRotatePID(double percentGoal){
     double goal = armMaxPosition * percentGoal/100;
     
     armRotator.set(ControlMode.Position, goal);
   }
 
-
+  //Zero the arm
   public void zeroArm(boolean findingMin){
     if (Math.abs(armMotor.getStatorCurrent()) > zeroSettingAmperage){
       if (zeroSettingBOOL == false){
@@ -1097,6 +1084,7 @@ public class Robot extends TimedRobot {
     }
   }
 
+  //Set brake mode for the drives
   public void setBrakeMode(boolean brake){
     if (brake){
       leftDrive1.setNeutralMode(NeutralMode.Brake);
@@ -1112,25 +1100,7 @@ public class Robot extends TimedRobot {
     }
   }
   
-
-  @Override
-  public void testInit() {
-    // Cancels all running commands at the start of test mode.
-    CommandScheduler.getInstance().cancelAll();
-  }
-
-  /** This function is called periodically during test mode. */
-  @Override
-  public void testPeriodic() {}
-
-  /** This function is called once when the robot is first started up. */
-  @Override
-  public void simulationInit() {}
-
-  /** This function is called periodically whilst in simulation. */
-  @Override
-  public void simulationPeriodic() {}
-
+  //Auto Distance PID
   public void distancePID(double goal, double P, double maxSpeed){
     double position = (leftDrive1.getSelectedSensorPosition() + rightDrive1.getSelectedSensorPosition()) / 2;
     double error = goal - position;
@@ -1146,7 +1116,7 @@ public class Robot extends TimedRobot {
     }
   }
 
-    
+  //Balancing PID
   public void balancingPID(double P, double D, double max){
     double error = navX.getRoll();
     double demand = error * P;
@@ -1158,6 +1128,7 @@ public class Robot extends TimedRobot {
     rightDrive1.set(ControlMode.PercentOutput, demand);
   }
 
+  // Detecting angle change 
   public double yawPID(double P, double targetAngle, double maxSpeed) {
     double error = navX.getAngle() - targetAngle;
     double demand = error * P * maxSpeed;
@@ -1172,6 +1143,7 @@ public class Robot extends TimedRobot {
     return error;
   }
 
+  //Calculating angle when turning
   public double calculateAngleToTurn(double desiredYaw) {
     double realYaw = navX.getAngle();
     double absYaw = angleToAbsYaw(realYaw);
@@ -1191,6 +1163,7 @@ public class Robot extends TimedRobot {
     return (angle%360);
   }
 
+  //Driving with PercentOutput
   public void drive(){
     double x;
     double y;
@@ -1210,6 +1183,7 @@ public class Robot extends TimedRobot {
     rightDrive1.set(ControlMode.PercentOutput, y - x);
   }
 
+  //Driving with Velocity
   public void driveButBetter(){
     double x;
     double y;
@@ -1260,10 +1234,10 @@ public class Robot extends TimedRobot {
     }
 
     SmartDashboard.putNumber("LeftDriveTargetVelocity", (y + x)*goal);
-    SmartDashboard.putNumber("RightDriveTargetVelocity", (y - x)*goal);
-
-    
+    SmartDashboard.putNumber("RightDriveTargetVelocity", (y - x)*goal); 
   }
+
+  //Arm wheels on gripper
   public void shooter(){
     if(timer.get() <= shooterFlag){
       armWheels.set(ControlMode.PercentOutput, -power); 
@@ -1290,4 +1264,22 @@ public class Robot extends TimedRobot {
       manualMode = true;
     }
   }
+  @Override
+  public void testInit() {
+    // Cancels all running commands at the start of test mode.
+    CommandScheduler.getInstance().cancelAll();
+  }
+
+  /** This function is called periodically during test mode. */
+  @Override
+  public void testPeriodic() {}
+
+  /** This function is called once when the robot is first started up. */
+  @Override
+  public void simulationInit() {}
+
+  /** This function is called periodically whilst in simulation. */
+  @Override
+  public void simulationPeriodic() {}
+
 }
