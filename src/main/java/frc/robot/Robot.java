@@ -16,11 +16,30 @@ import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.CANifier;
+import com.ctre.phoenix.CANifier.LEDChannel;
 import com.kauailabs.navx.frc.AHRS;
 
 
 public class Robot extends TimedRobot {
 
+  //CANIFIER stuff for the LEDs
+  CANifier canifier;
+  double timeBetweenLightChanges = 0.2;
+  double timeBetweenLightChangesFlag = 0.02;
+  enum LightOption {
+    off,
+    weewoo,
+    balance,
+    cube,
+    cone
+  };
+
+  LightOption myLightOption;
+
+  double R = 0;
+  double G = 0;
+  double B = 0;
 
   TalonFX leftDrive1;
   TalonFX leftDrive2;
@@ -135,6 +154,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
+    myLightOption = LightOption.off;
+    canifier = new CANifier(40);
+
     leftDrive1 = new TalonFX(1);
     leftDrive2 = new TalonFX(2);
     rightDrive1 = new TalonFX(3);
@@ -262,6 +284,79 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
+    double speed = 1;
+
+    double intensity = 0.5;
+    double amountGreen;
+    double amountRed;
+    double amountBlue; 
+
+    switch(myLightOption){
+      case off:
+        speed = 1;
+
+        intensity = 0.5;
+    
+        amountGreen = ((Math.sin((timer.get() * speed)) + 1) / 2) * intensity;
+        amountRed = ((Math.sin((timer.get() * speed) + (Math.toRadians(90))) + 1) / 2) * intensity ;
+        amountBlue = ((Math.sin((timer.get() * speed) + (Math.toRadians(180))) + 1) / 2) * intensity;
+        
+        canifier.setLEDOutput(amountGreen, LEDChannel.LEDChannelA); //green
+        canifier.setLEDOutput(amountRed, LEDChannel.LEDChannelB); //red
+        canifier.setLEDOutput(amountBlue, LEDChannel.LEDChannelC); //blue
+      break;
+      case weewoo:
+        intensity = 0.5;
+        if (G == 0 && timer.get() >= timeBetweenLightChangesFlag){
+          timeBetweenLightChangesFlag = timer.get() + timeBetweenLightChanges;
+          G = 1;
+          canifier.setLEDOutput(0, LEDChannel.LEDChannelA); //green
+          canifier.setLEDOutput(1 * intensity, LEDChannel.LEDChannelB); //red
+          canifier.setLEDOutput(0, LEDChannel.LEDChannelC); //blue
+        }else if (G == 1 && timer.get() >= timeBetweenLightChangesFlag){
+          G = 0;
+          timeBetweenLightChangesFlag = timer.get() + timeBetweenLightChanges;
+          canifier.setLEDOutput(0, LEDChannel.LEDChannelA); //green
+          canifier.setLEDOutput(0, LEDChannel.LEDChannelB); //red
+          canifier.setLEDOutput(1 * intensity, LEDChannel.LEDChannelC); //blue
+        }
+      break;
+      case balance:
+        amountGreen = 1 - (Math.abs(navX.getPitch()) / 10);
+        amountRed = (Math.abs(navX.getPitch()) / 10);
+        amountBlue = 0;
+        
+        canifier.setLEDOutput(amountGreen, LEDChannel.LEDChannelA); //green
+        canifier.setLEDOutput(amountRed, LEDChannel.LEDChannelB); //red
+        canifier.setLEDOutput(amountBlue, LEDChannel.LEDChannelC); //blue
+      break;
+      case cube:
+        canifier.setLEDOutput(0, LEDChannel.LEDChannelA); //green
+        canifier.setLEDOutput(1, LEDChannel.LEDChannelB); //red
+        canifier.setLEDOutput(1, LEDChannel.LEDChannelC); //blue
+      break;
+      case cone:
+        canifier.setLEDOutput(1, LEDChannel.LEDChannelA); //green
+        canifier.setLEDOutput(1, LEDChannel.LEDChannelB); //red
+        canifier.setLEDOutput(0, LEDChannel.LEDChannelC); //blue
+      break;
+    }
+
+    if (driveStick.getRawButton(1)){
+      myLightOption = LightOption.cube;
+    } 
+    else if (driveStick.getRawButton(4)){
+      myLightOption = LightOption.cone;
+    } 
+    else if (driveStick.getRawButton(13)){
+      myLightOption = LightOption.weewoo;
+    } 
+    else if (driveStick.getRawButton(14)){
+      myLightOption = LightOption.balance;
+    } else if(driveStick.getPOV() == 180){
+      myLightOption = LightOption.off;
+    }
+
     CommandScheduler.getInstance().run();
 
     //SmartDashboard.putNumber("shooter runtime", 2); :)
@@ -333,7 +428,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    myLightOption = LightOption.off;
+  }
 
   @Override
   public void disabledPeriodic() {}
