@@ -154,13 +154,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-<<<<<<< HEAD
     myLightOption = LightOption.off;
     canifier = new CANifier(40);
 
-=======
-    //Drive Falcons
->>>>>>> 055621723d51d88ba2e5f3e50f15d2a91c492621
     leftDrive1 = new TalonFX(1);
     leftDrive2 = new TalonFX(2);
     rightDrive1 = new TalonFX(3);
@@ -353,10 +349,10 @@ public class Robot extends TimedRobot {
       break;
     }
 
-    if (driveStick.getRawButton(1)){
+    if (operatorStick.getPOV() == 270){
       myLightOption = LightOption.cube;
     } 
-    else if (driveStick.getRawButton(4)){
+    else if (operatorStick.getPOV() == 90){
       myLightOption = LightOption.cone;
     } 
     else if (driveStick.getRawButton(13)){
@@ -364,7 +360,7 @@ public class Robot extends TimedRobot {
     } 
     else if (driveStick.getRawButton(14)){
       myLightOption = LightOption.balance;
-    } else if(driveStick.getPOV() == 180){
+    } else if(operatorStick.getPOV() == 0){
       myLightOption = LightOption.off;
     }
 
