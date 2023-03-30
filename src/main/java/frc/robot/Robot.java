@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
@@ -32,7 +33,8 @@ public class Robot extends TimedRobot {
     weewoo,
     balance,
     cube,
-    cone
+    cone,
+    disabled
   };
 
   LightOption myLightOption;
@@ -148,6 +150,10 @@ public class Robot extends TimedRobot {
   boolean slowTurning;
 
   //Collection<TalonFX> _fxes =  { new TalonFX(1), new TalonFX(2), new TalonFX(3) };
+
+  boolean flashLights;
+  double flashPeriod = 1;
+  boolean redAlliance;
 
   //auto Variables
   int autoStep = 0;
@@ -287,6 +293,7 @@ public class Robot extends TimedRobot {
     liftMotor.setSelectedSensorPosition(0);
     SmartDashboard.putBoolean("WheelieProtectionSticky", false);
 
+    redAlliance = NetworkTableInstance.getDefault().getTable("FMSInfo").getEntry("IsRedAlliance").getBoolean(false);
   }
 
   @Override
@@ -299,6 +306,17 @@ public class Robot extends TimedRobot {
     double amountBlue; 
 
     switch(myLightOption){
+      case disabled:
+        if(redAlliance) {
+          canifier.setLEDOutput(0, LEDChannel.LEDChannelA); //green
+          canifier.setLEDOutput(1, LEDChannel.LEDChannelB); //red
+          canifier.setLEDOutput(0, LEDChannel.LEDChannelC); //blue
+        } else {
+          canifier.setLEDOutput(0, LEDChannel.LEDChannelA); //green
+          canifier.setLEDOutput(0, LEDChannel.LEDChannelB); //red
+          canifier.setLEDOutput(1, LEDChannel.LEDChannelC); //blue
+        }
+        break;
       case off:
         speed = 1;
 
@@ -338,22 +356,36 @@ public class Robot extends TimedRobot {
         canifier.setLEDOutput(amountBlue, LEDChannel.LEDChannelC); //blue
       break;
       case cube:
-        canifier.setLEDOutput(0, LEDChannel.LEDChannelA); //green
-        canifier.setLEDOutput(1, LEDChannel.LEDChannelB); //red
-        canifier.setLEDOutput(1, LEDChannel.LEDChannelC); //blue
+        if(timer.get() % flashPeriod > flashPeriod/2 |! flashLights) {
+          canifier.setLEDOutput(0, LEDChannel.LEDChannelA); //green
+          canifier.setLEDOutput(1, LEDChannel.LEDChannelB); //red
+          canifier.setLEDOutput(1, LEDChannel.LEDChannelC); //blue
+        } else {
+          canifier.setLEDOutput(0, LEDChannel.LEDChannelA); //green
+          canifier.setLEDOutput(0.25, LEDChannel.LEDChannelB); //red
+          canifier.setLEDOutput(0.25, LEDChannel.LEDChannelC); //blue
+        }
       break;
       case cone:
-        canifier.setLEDOutput(1, LEDChannel.LEDChannelA); //green
-        canifier.setLEDOutput(1, LEDChannel.LEDChannelB); //red
-        canifier.setLEDOutput(0, LEDChannel.LEDChannelC); //blue
+        if(timer.get() % flashPeriod > flashPeriod/2 |! flashLights) {
+          canifier.setLEDOutput(0.7, LEDChannel.LEDChannelA); //green
+          canifier.setLEDOutput(1, LEDChannel.LEDChannelB); //red
+          canifier.setLEDOutput(0, LEDChannel.LEDChannelC); //blue
+        } else {
+          canifier.setLEDOutput(0.175, LEDChannel.LEDChannelA); //green
+          canifier.setLEDOutput(0.25, LEDChannel.LEDChannelB); //red
+          canifier.setLEDOutput(0, LEDChannel.LEDChannelC); //blue
+        }
       break;
     }
 
     if (operatorStick.getPOV() == 270){
       myLightOption = LightOption.cube;
+      flashLights = true;
     } 
     else if (operatorStick.getPOV() == 90){
       myLightOption = LightOption.cone;
+      flashLights = true;
     } 
     else if (driveStick.getRawButton(13)){
       myLightOption = LightOption.weewoo;
@@ -362,6 +394,8 @@ public class Robot extends TimedRobot {
       myLightOption = LightOption.balance;
     } else if(operatorStick.getPOV() == 0){
       myLightOption = LightOption.off;
+    } else {
+      flashLights = false;
     }
 
     CommandScheduler.getInstance().run();
@@ -436,7 +470,7 @@ public class Robot extends TimedRobot {
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
-    myLightOption = LightOption.off;
+    myLightOption = LightOption.disabled;
   }
 
   @Override
@@ -847,6 +881,8 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putBoolean("WheelieProtectionSticky", false);
 
+    myLightOption = LightOption.off;
+
   }
 
   /** This function is called periodically during operator control. */
@@ -897,8 +933,8 @@ public class Robot extends TimedRobot {
     if(driveStick.getRawButtonPressed(10)){
       driveShiftBool = !driveShiftBool;
 
-      leftDrive1.configClosedloopRamp(driveShiftBool? 0.75:0.3);
-      rightDrive1.configClosedloopRamp(driveShiftBool? 0.75:0.3);
+      leftDrive1.configClosedloopRamp(driveShiftBool? 0.65:0.3);
+      rightDrive1.configClosedloopRamp(driveShiftBool? 0.65:0.3);
     }
     driveGearShiftSolenoid.set(driveShiftBool);
 
@@ -1187,7 +1223,7 @@ public class Robot extends TimedRobot {
     //max goal = -20000
     double goal = 20000;
     if(driveShiftBool) {
-      goal = 14000;
+      goal = 12500;
     }
 
     double xdivisor = (slowTurning)? 6 : 3;
@@ -1211,17 +1247,20 @@ public class Robot extends TimedRobot {
     y = (y > 0.1)? ((y-0.1)/0.9) : y;
     y = (y < -0.1)? ((y+0.1)/0.9) : y;
 
-    y *= 1 - (navX.getPitch() * 0.1);
+    //y *= 1 - (navX.getPitch() * 0.1);
+
+    SmartDashboard.putNumber("DriveX", x);
+    SmartDashboard.putNumber("DriveY", y);
 
     SmartDashboard.putBoolean("WheelieProtection", false);
 
-    if(Math.abs(navX.getPitch()) > 2.0 && driveShiftBool) {
+    /*if(Math.abs(navX.getPitch()) > 2.0 && driveShiftBool) {
       SmartDashboard.putBoolean("WheelieProtectionSticky", true);
       SmartDashboard.putBoolean("WheelieProtection", true);
       //leftDrive1.set(ControlMode.Disabled, 0);
       //rightDrive1.set(ControlMode.Disabled, 0);
     }
-    else if(x == 0 && y == 0) {
+    else*/ if(x == 0 && y == 0) {
       leftDrive1.set(ControlMode.Disabled, 0);
       rightDrive1.set(ControlMode.Disabled, 0);
     } else {
