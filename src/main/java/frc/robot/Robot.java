@@ -151,6 +151,9 @@ public class Robot extends TimedRobot {
 
   //Collection<TalonFX> _fxes =  { new TalonFX(1), new TalonFX(2), new TalonFX(3) };
 
+  Timer runTimer;
+
+  boolean fmsConnected = false;
   boolean flashLights;
   double flashPeriod = 1;
   boolean redAlliance;
@@ -160,6 +163,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
+    runTimer = new Timer();
+    runTimer.start();
+
     myLightOption = LightOption.off;
     canifier = new CANifier(40);
 
@@ -293,7 +299,6 @@ public class Robot extends TimedRobot {
     liftMotor.setSelectedSensorPosition(0);
     SmartDashboard.putBoolean("WheelieProtectionSticky", false);
 
-    redAlliance = NetworkTableInstance.getDefault().getTable("FMSInfo").getEntry("IsRedAlliance").getBoolean(false);
   }
 
   @Override
@@ -465,6 +470,10 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putBoolean("Slow Turning", slowTurning);
 
+    //look for alliance status for 30 seconds after 
+    if(runTimer.get() < 30) {
+      redAlliance = NetworkTableInstance.getDefault().getTable("FMSInfo").getEntry("IsRedAlliance").getBoolean(false);
+    }
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -588,18 +597,49 @@ public class Robot extends TimedRobot {
           if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[7]);
         }
         
-        if (autoDriveToPositionVelocityDrive(320000, 8000, 8000, 0.0001)){
+        if (autoDriveToPositionVelocityDrive(320000, 8000, 9000, 0.0001)){
           autoStep++;
         }
         break;
       case 6:
-        if (autoTurnToAngleVelocityDrive(-173, 2500, 0.04)){
+        if (autoTurnToAngleVelocityDrive(-173, 4500, 0.04)){
           autoStep++;
-          leftDrive1.set(ControlMode.PercentOutput, 0);
-          rightDrive1.set(ControlMode.PercentOutput, 0);
+          leftDrive1.set(ControlMode.Disabled, 0);
+          rightDrive1.set(ControlMode.Disabled, 0);
+          leftDrive1.setSelectedSensorPosition(0);
+          rightDrive1.setSelectedSensorPosition(0);
+          armWheels.set(ControlMode.PercentOutput, 0.24);
           armAutoPosition = 5;
         }
-      break;
+        break;
+      case 7:
+        if(autoDriveToPositionVelocityDrive(-80000, 3000, 4000, 0.0001)) {
+          autoStep++;
+          autoTimer = timer.get();
+        }
+        break;
+      case 8:
+        armMotor.set(ControlMode.Position, armSlidePositions[5]);
+        armRotator.set(ControlMode.Position, armRotatePositions[5]);
+        if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[5]);
+        if (timer.get() - autoTimer > 0.7){
+          autoStep++;
+        }
+        break;
+      case 9:
+        if(autoTurnToAngleVelocityDrive(0, 4500, 0.04)) {
+          autoStep++;
+          leftDrive1.set(ControlMode.Disabled, 0);
+          rightDrive1.set(ControlMode.Disabled, 0);
+          leftDrive1.setSelectedSensorPosition(0);
+          rightDrive1.setSelectedSensorPosition(0);
+        }
+        break;
+      case 10:
+        if(autoDriveToPositionVelocityDrive(-80000, 3000, 5500, 0.0001)) {
+          autoStep++;
+        }
+        break;
     }
   }
 
@@ -652,18 +692,49 @@ public class Robot extends TimedRobot {
           if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[7]);
         }
         
-        if (autoDriveToPositionVelocityDrive(320000, 8000, 8000, 0.0001)){
+        if (autoDriveToPositionVelocityDrive(320000, 8000, 10000, 0.0001)){
           autoStep++;
         }
         break;
       case 6:
-        if (autoTurnToAngleVelocityDrive(167, 2500, 0.04)){
+        if (autoTurnToAngleVelocityDrive(167, 4500, 0.04)){
           autoStep++;
           leftDrive1.set(ControlMode.PercentOutput, 0);
           rightDrive1.set(ControlMode.PercentOutput, 0);
+          leftDrive1.setSelectedSensorPosition(0);
+          rightDrive1.setSelectedSensorPosition(0);
+          armWheels.set(ControlMode.PercentOutput, 0.25);
           armAutoPosition = 5;
         }
-      break;
+        break;
+        case 7:
+        if(autoDriveToPositionVelocityDrive(-80000, 3000, 4000, 0.0001)) {
+          autoStep++;
+          autoTimer = timer.get();
+        }
+        break;
+      case 8:
+        armMotor.set(ControlMode.Position, armSlidePositions[5]);
+        armRotator.set(ControlMode.Position, armRotatePositions[5]);
+        if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[5]);
+        if (timer.get() - autoTimer > 0.7){
+          autoStep++;
+        }
+        break;
+      case 9:
+        if(autoTurnToAngleVelocityDrive(0, 4500, 0.04)) {
+          autoStep++;
+          leftDrive1.set(ControlMode.Disabled, 0);
+          rightDrive1.set(ControlMode.Disabled, 0);
+          leftDrive1.setSelectedSensorPosition(0);
+          rightDrive1.setSelectedSensorPosition(0);
+        }
+        break;
+      case 10:
+        if(autoDriveToPositionVelocityDrive(-80000, 3000, 5500, 0.0001)) {
+          autoStep++;
+        }
+        break;
     }
   }
 
@@ -726,6 +797,7 @@ public class Robot extends TimedRobot {
           autoStep++;
           
           autoTimer = timer.get();
+          myLightOption = LightOption.balance;
         }
         break;
       case 7:
@@ -806,7 +878,7 @@ public class Robot extends TimedRobot {
           //leftDrive1.set(ControlMode.Disabled, 0);
           //rightDrive1.set(ControlMode.Disabled, 0);
           autoStep++;
-          
+          myLightOption = LightOption.balance;
           autoTimer = timer.get();
         }
         break;
@@ -933,8 +1005,8 @@ public class Robot extends TimedRobot {
     if(driveStick.getRawButtonPressed(10)){
       driveShiftBool = !driveShiftBool;
 
-      leftDrive1.configClosedloopRamp(driveShiftBool? 0.65:0.3);
-      rightDrive1.configClosedloopRamp(driveShiftBool? 0.65:0.3);
+      leftDrive1.configClosedloopRamp(driveShiftBool? 0.5:0.3);
+      rightDrive1.configClosedloopRamp(driveShiftBool? 0.5:0.3);
     }
     driveGearShiftSolenoid.set(driveShiftBool);
 
