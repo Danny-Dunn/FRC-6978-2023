@@ -58,6 +58,8 @@ public class Robot extends TimedRobot {
   Joystick operatorStick;
 
   AHRS navX;
+
+  Telemetry telemetry = new Telemetry();
   
   boolean isSticking;
 
@@ -162,7 +164,15 @@ public class Robot extends TimedRobot {
   int autoStep = 0;
 
   @Override
+  protected void loopFunc() {
+    telemetry.openFrame();
+    super.loopFunc();
+    telemetry.closeFrame();
+  }
+
+  @Override
   public void robotInit() {
+    telemetry.openSession();
     runTimer = new Timer();
     runTimer.start();
 
@@ -299,6 +309,12 @@ public class Robot extends TimedRobot {
     liftMotor.setSelectedSensorPosition(0);
     SmartDashboard.putBoolean("WheelieProtectionSticky", false);
 
+  }
+
+  @Override
+  public void endCompetition() {
+    telemetry.closeSession();
+    super.endCompetition();
   }
 
   @Override
@@ -584,7 +600,7 @@ public class Robot extends TimedRobot {
         }
         break;
       case 4:
-        if (timer.get() - autoTimer > 1){
+        if (timer.get() - autoTimer > 0.5){
           autoStep++;
           autoTimer = timer.get();
         }
@@ -679,7 +695,7 @@ public class Robot extends TimedRobot {
         }
         break;
       case 4:
-        if (timer.get() - autoTimer > 1){
+        if (timer.get() - autoTimer > 0.5){
           autoStep++;
           autoTimer = timer.get();
         }
@@ -692,12 +708,12 @@ public class Robot extends TimedRobot {
           if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[7]);
         }
         
-        if (autoDriveToPositionVelocityDrive(320000, 8000, 10000, 0.0001)){
+        if (autoDriveToPositionVelocityDrive(320000, 8000, 13000, 0.0001)){
           autoStep++;
         }
         break;
       case 6:
-        if (autoTurnToAngleVelocityDrive(167, 4500, 0.04)){
+        if (autoTurnToAngleVelocityDrive(166, 4500, 0.04)){
           autoStep++;
           leftDrive1.set(ControlMode.PercentOutput, 0);
           rightDrive1.set(ControlMode.PercentOutput, 0);
@@ -731,8 +747,10 @@ public class Robot extends TimedRobot {
         }
         break;
       case 10:
-        if(autoDriveToPositionVelocityDrive(-80000, 3000, 5500, 0.0001)) {
+        if(autoDriveToPositionVelocityDrive(-320000, 3000, 16000, 0.0001)) {
           autoStep++;
+          leftDrive1.set(ControlMode.Disabled, 0);
+          rightDrive1.set(ControlMode.Disabled, 0);
         }
         break;
     }
