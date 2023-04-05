@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map.Entry;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -19,13 +20,18 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Telemetry {
     HashMap<String,Object> currentFrame = new HashMap<String, Object>();
     HashMap<String,Long> events = new HashMap<String,Long>();
+    HashMap<String,Short> registeredKeys = new HashMap<String, Short>();
+    HashMap<String,Short> newlyRegisteredKeys = new HashMap<String, Short>();
     long lastFrameSaveDuration, frameOpenTS;
     FileWriter file;
     int numFramesSaved = 0;
+    int numFramesTotal = 0;
+    int frequency = 1;
+    short numRegisteredKeys;
 
     boolean frameOpen, sessionOpen;
 
-    public void openSession(String name) {
+    public void openSession(String name, int frequency) {
         String eventName = NetworkTableInstance.getDefault().getTable("FMSInfo").getEntry("EventName").getString("UnknownEvent");
         long fmsControlInfo = NetworkTableInstance.getDefault().getTable("FMSInfo").getEntry("FMSControlData").getInteger(0);
         long matchNumber = NetworkTableInstance.getDefault().getTable("FMSInfo").getEntry("MatchNumber").getInteger(0);
@@ -68,25 +74,39 @@ public class Telemetry {
         }
         sessionOpen = true;
         numFramesSaved = 0;
+        numFramesTotal = 0;
     }
 
     public void pushDouble(String key, double value) {
+        registerKey(key);
         SmartDashboard.putNumber(key, value);
         currentFrame.put(key, (Double)value);
     }
 
     public void pushBoolean(String key, boolean value) {
+        registerKey(key);
         SmartDashboard.putBoolean(key, value);
         currentFrame.put(key, (Boolean)value);
     }
 
     public void pushString(String key, String value) {
+        registerKey(key);
         SmartDashboard.putString(key, value);
         currentFrame.put(key, (String)value);
     }
 
     public void pushEvent(String name) {
         events.put(name, System.nanoTime());
+    }
+
+    void registerKey(String key) {
+        if(registeredKeys.containsKey(key)) return;
+ 
+        newlyRegisteredKeys.put(key, numRegisteredKeys);
+        registeredKeys.put(key, numRegisteredKeys);
+
+        System.out.println("Registered new key " + key + " as " + numRegisteredKeys);
+        numRegisteredKeys++;
     }
 
     public void openFrame() {
@@ -101,13 +121,16 @@ public class Telemetry {
         if(!sessionOpen) return;
         if(file == null) return;
         long saveStartTS = System.nanoTime();
+
+        if(numFramesTotal % frequency != 0)
+
         try {
             if(numFramesSaved < 1) {
                 file.write("{");
             } else {
                 file.write(",{");
             }
-            
+
             for(Entry<String, Object> entry : currentFrame.entrySet()) {
                 file.write("\"" + (String)entry.getKey() + "\": ");
                 Object value = entry.getValue();
@@ -141,15 +164,19 @@ public class Telemetry {
             
             file.write("}");
             file.flush();
-
+            numFramesSaved++;
         } catch (IOException e){
             System.out.println("Encountered IOException while trying to write telemetry: " + e.toString());
         } 
+
+        clear:
+
         lastFrameSaveDuration = System.nanoTime() - saveStartTS;
         currentFrame.clear();
         events.clear();
         frameOpen = false;
-        numFramesSaved++;
+        newlyRegisteredKeys.clear();
+        
     }
 
     public void closeSession() {

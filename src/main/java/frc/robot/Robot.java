@@ -432,27 +432,28 @@ public class Robot extends TimedRobot {
     telemetry.pushDouble("pitch", roll);
     telemetry.pushBoolean("sticking?", isSticking);
 
-    telemetry.pushDouble("Arm Length POS", armMotor.getSelectedSensorPosition());
-    telemetry.pushDouble("Arm Length AMP", armMotor.getStatorCurrent());
-    telemetry.pushDouble("Arm Length MAX", armMax);
-    telemetry.pushDouble("Arm length applied", armMotor.getMotorOutputPercent());
+    telemetry.pushDouble("Slide POS", armMotor.getSelectedSensorPosition());
+    telemetry.pushDouble("Slide AMP", armMotor.getStatorCurrent());
+    telemetry.pushDouble("Slide MAX", armMax);
+    telemetry.pushDouble("Slide applied", armMotor.getMotorOutputPercent());
 
     telemetry.pushDouble("Arm Rotation Position", armRotator.getSelectedSensorPosition()); //400,000 to 0
     
     //telemetry.pushDouble("Arm Rot POS", armRotator.getSelectedSensorPosition());
     telemetry.pushDouble("Lift Position", liftMotor.getSelectedSensorPosition()); //-800,000 to 0
 
-    telemetry.pushDouble("Arm PID GOAL", armSlideGoal);
+    telemetry.pushDouble("Slide Target", armSlideGoal);
     armSlideGoalIncrement = SmartDashboard.getNumber("Arm PID Increment %", 10)/100;
     liftGoalIncrement = SmartDashboard.getNumber("Lift PID Increment %", 10)/100;
 
     telemetry.pushBoolean("ManualMode", manualMode);
     if(operatorStick.getRawButtonPressed(9)){
       manualMode = !manualMode; 
+      telemetry.pushEvent("operatorToggledArmAutomation");
     }
 
-    telemetry.pushDouble("LeftDriveVEL", leftDrive1.getSelectedSensorVelocity());
-    telemetry.pushDouble("RightDriveVEL", rightDrive1.getSelectedSensorVelocity());
+    telemetry.pushDouble("Left Drive Velocity", leftDrive1.getSelectedSensorVelocity());
+    telemetry.pushDouble("Right Drive Velocity", rightDrive1.getSelectedSensorVelocity());
 
     telemetry.pushDouble("ArmAutoPosition", armAutoPosition);
 
@@ -460,7 +461,7 @@ public class Robot extends TimedRobot {
     telemetry.pushDouble("navX yaw", navX.getYaw());
     telemetry.pushDouble("target angle", targetAngle);
     telemetry.pushDouble("Lift Current", liftMotor.getSupplyCurrent());
-    telemetry.pushDouble("Lift MAX Current", highestAmperage);
+    //telemetry.pushDouble("Lift MAX Current", highestAmperage);
 
     //telemetry.pushDouble("ArmP", 0);
 
@@ -476,14 +477,14 @@ public class Robot extends TimedRobot {
 
     
 
-    //telemetry.pushDouble("Auto Step", autoStep);
+    telemetry.pushDouble("Auto Step", autoStep);
 
-    telemetry.pushDouble("LeftDrive POS", leftDrive1.getSelectedSensorPosition());
-    telemetry.pushDouble("rightDrive POS", rightDrive1.getSelectedSensorPosition());
-
-    telemetry.pushDouble("Yaw", navX.getAngle());
+    telemetry.pushDouble("Left Drive Position", leftDrive1.getSelectedSensorPosition());
+    telemetry.pushDouble("Right Drive Position", rightDrive1.getSelectedSensorPosition());
 
     telemetry.pushBoolean("Slow Turning", slowTurning);
+
+    
 
     //look for alliance status for 30 seconds after 
     if(runTimer.get() < 30) {
@@ -505,7 +506,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     telemetry.closeSession();
-    telemetry.openSession("autonomous");
+    telemetry.openSession("autonomous", 2);
     //Set rotate, lift and slide to 0
     armRotator.setSelectedSensorPosition(0);
     armMotor.setSelectedSensorPosition(0);
@@ -950,7 +951,7 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
 
     telemetry.closeSession();
-    telemetry.openSession("teleop");
+    telemetry.openSession("teleop", 2);
 
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
