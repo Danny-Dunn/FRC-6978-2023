@@ -25,7 +25,7 @@ public class Telemetry {
 
     boolean frameOpen, sessionOpen;
 
-    public void openSession() {
+    public void openSession(String name) {
         String eventName = NetworkTableInstance.getDefault().getTable("FMSInfo").getEntry("EventName").getString("UnknownEvent");
         long fmsControlInfo = NetworkTableInstance.getDefault().getTable("FMSInfo").getEntry("FMSControlData").getInteger(0);
         long matchNumber = NetworkTableInstance.getDefault().getTable("FMSInfo").getEntry("MatchNumber").getInteger(0);
@@ -37,9 +37,9 @@ public class Telemetry {
 
         //if fms connected
         if((fmsControlInfo & 16l) > 0) {
-            fileName = eventName + "-" + matchNumber + "-" + dtf.format(now) + ".json";
+            fileName = eventName + "-" + matchNumber + "-" + name + "-" + dtf.format(now) + ".json";
         } else {
-            fileName = "Testing-" + dtf.format(now) + ".json";
+            fileName = "Testing-" + name + "-" + dtf.format(now) + ".json";
         }
 
         //create the telemetry folder if it doesn't already exist
@@ -98,6 +98,7 @@ public class Telemetry {
     }
 
     public void closeFrame() {
+        if(!sessionOpen) return;
         if(file == null) return;
         long saveStartTS = System.nanoTime();
         try {
@@ -152,6 +153,8 @@ public class Telemetry {
     }
 
     public void closeSession() {
+        if(!sessionOpen) return;
+        if(file == null) return;
         try{
             file.write("]}");
             file.flush();
@@ -163,6 +166,6 @@ public class Telemetry {
     }
 
     String determineStoragePathLocation() {
-        return "~/telemetry";
+        return "/home/lvuser/telemetry";
     }
 }

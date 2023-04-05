@@ -172,7 +172,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    telemetry.openSession();
     runTimer = new Timer();
     runTimer.start();
 
@@ -269,8 +268,8 @@ public class Robot extends TimedRobot {
     driveGearShiftSolenoid = new Solenoid(PneumaticsModuleType.CTREPCM, 0);
     gripperSolenoid = new Solenoid(PneumaticsModuleType.CTREPCM, 1);
 
-    SmartDashboard.putNumber("angleP", angleP);
-    SmartDashboard.putNumber("angleD", angleD);
+    telemetry.pushDouble("angleP", angleP);
+    telemetry.pushDouble("angleD", angleD);
 
     timer = new Timer();
     timer.start();
@@ -292,22 +291,22 @@ public class Robot extends TimedRobot {
     armMaxPosition = 20000;
 
     //lift pid
-    SmartDashboard.putNumber("Lift P", liftP);
-    SmartDashboard.putNumber("Lift I", liftI);
-    SmartDashboard.putNumber("Lift D", liftD);
+    telemetry.pushDouble("Lift P", liftP);
+    telemetry.pushDouble("Lift I", liftI);
+    telemetry.pushDouble("Lift D", liftD);
 
-    SmartDashboard.putNumber("Arm PID Increment %", 10);
+    telemetry.pushDouble("Arm PID Increment %", 10);
 
-    SmartDashboard.putNumber("ArmP", 0.181);   
+    telemetry.pushDouble("ArmP", 0.181);   
 
-    SmartDashboard.putNumber("shooter power (0-1)", 0.3); 
+    telemetry.pushDouble("shooter power (0-1)", 0.3); 
 
-    SmartDashboard.putNumber("Auto Type: ", 0); 
+    telemetry.pushDouble("Auto Type: ", 0); 
 
     armRotator.setSelectedSensorPosition(0);
     armMotor.setSelectedSensorPosition(0);
     liftMotor.setSelectedSensorPosition(0);
-    SmartDashboard.putBoolean("WheelieProtectionSticky", false);
+    telemetry.pushBoolean("WheelieProtectionSticky", false);
 
   }
 
@@ -421,7 +420,7 @@ public class Robot extends TimedRobot {
 
     CommandScheduler.getInstance().run();
 
-    //SmartDashboard.putNumber("shooter runtime", 2); :)
+    //telemetry.pushDouble("shooter runtime", 2); :)
     power = SmartDashboard.getNumber("shooter power (0-1)", 0.3);
     time = SmartDashboard.getNumber("shooter runtime", 2);
 
@@ -429,45 +428,45 @@ public class Robot extends TimedRobot {
     angleD = SmartDashboard.getNumber("angleD", 0);
     roll = navX.getPitch();
 
-    SmartDashboard.putBoolean("BreakStatus", brakeStatus);
-    SmartDashboard.putNumber("pitch", roll);
-    SmartDashboard.putBoolean("sticking?", isSticking);
+    telemetry.pushBoolean("BreakStatus", brakeStatus);
+    telemetry.pushDouble("pitch", roll);
+    telemetry.pushBoolean("sticking?", isSticking);
 
-    SmartDashboard.putNumber("Arm Length POS", armMotor.getSelectedSensorPosition());
-    SmartDashboard.putNumber("Arm Length AMP", armMotor.getStatorCurrent());
-    SmartDashboard.putNumber("Arm Length MAX", armMax);
-    SmartDashboard.putNumber("Arm length applied", armMotor.getMotorOutputPercent());
+    telemetry.pushDouble("Arm Length POS", armMotor.getSelectedSensorPosition());
+    telemetry.pushDouble("Arm Length AMP", armMotor.getStatorCurrent());
+    telemetry.pushDouble("Arm Length MAX", armMax);
+    telemetry.pushDouble("Arm length applied", armMotor.getMotorOutputPercent());
 
-    SmartDashboard.putNumber("Arm Rotation Position", armRotator.getSelectedSensorPosition()); //400,000 to 0
+    telemetry.pushDouble("Arm Rotation Position", armRotator.getSelectedSensorPosition()); //400,000 to 0
     
-    //SmartDashboard.putNumber("Arm Rot POS", armRotator.getSelectedSensorPosition());
-    SmartDashboard.putNumber("Lift Position", liftMotor.getSelectedSensorPosition()); //-800,000 to 0
+    //telemetry.pushDouble("Arm Rot POS", armRotator.getSelectedSensorPosition());
+    telemetry.pushDouble("Lift Position", liftMotor.getSelectedSensorPosition()); //-800,000 to 0
 
-    SmartDashboard.putNumber("Arm PID GOAL", armSlideGoal);
+    telemetry.pushDouble("Arm PID GOAL", armSlideGoal);
     armSlideGoalIncrement = SmartDashboard.getNumber("Arm PID Increment %", 10)/100;
     liftGoalIncrement = SmartDashboard.getNumber("Lift PID Increment %", 10)/100;
 
-    SmartDashboard.putBoolean("ManualMode", manualMode);
+    telemetry.pushBoolean("ManualMode", manualMode);
     if(operatorStick.getRawButtonPressed(9)){
       manualMode = !manualMode; 
     }
 
-    SmartDashboard.putNumber("LeftDriveVEL", leftDrive1.getSelectedSensorVelocity());
-    SmartDashboard.putNumber("RightDriveVEL", rightDrive1.getSelectedSensorVelocity());
+    telemetry.pushDouble("LeftDriveVEL", leftDrive1.getSelectedSensorVelocity());
+    telemetry.pushDouble("RightDriveVEL", rightDrive1.getSelectedSensorVelocity());
 
-    SmartDashboard.putNumber("ArmAutoPosition", armAutoPosition);
+    telemetry.pushDouble("ArmAutoPosition", armAutoPosition);
 
-    SmartDashboard.putNumber("navX angle", navX.getAngle());
-    SmartDashboard.putNumber("navX yaw", navX.getYaw());
-    SmartDashboard.putNumber("target angle", targetAngle);
-    SmartDashboard.putNumber("Lift Current", liftMotor.getSupplyCurrent());
-    SmartDashboard.putNumber("Lift MAX Current", highestAmperage);
+    telemetry.pushDouble("navX angle", navX.getAngle());
+    telemetry.pushDouble("navX yaw", navX.getYaw());
+    telemetry.pushDouble("target angle", targetAngle);
+    telemetry.pushDouble("Lift Current", liftMotor.getSupplyCurrent());
+    telemetry.pushDouble("Lift MAX Current", highestAmperage);
 
-    //SmartDashboard.putNumber("ArmP", 0);
+    //telemetry.pushDouble("ArmP", 0);
 
-    SmartDashboard.putBoolean("Lift Allowed ON:", liftAllowedToRun);
+    telemetry.pushBoolean("Lift Allowed ON:", liftAllowedToRun);
 
-    SmartDashboard.putBoolean("High Gear", driveShiftBool);
+    telemetry.pushBoolean("High Gear", driveShiftBool);
 
     liftSafetyShutoff(0.1, 10);
 
@@ -477,14 +476,14 @@ public class Robot extends TimedRobot {
 
     
 
-    //SmartDashboard.putNumber("Auto Step", autoStep);
+    //telemetry.pushDouble("Auto Step", autoStep);
 
-    SmartDashboard.putNumber("LeftDrive POS", leftDrive1.getSelectedSensorPosition());
-    SmartDashboard.putNumber("rightDrive POS", rightDrive1.getSelectedSensorPosition());
+    telemetry.pushDouble("LeftDrive POS", leftDrive1.getSelectedSensorPosition());
+    telemetry.pushDouble("rightDrive POS", rightDrive1.getSelectedSensorPosition());
 
-    SmartDashboard.putNumber("Yaw", navX.getAngle());
+    telemetry.pushDouble("Yaw", navX.getAngle());
 
-    SmartDashboard.putBoolean("Slow Turning", slowTurning);
+    telemetry.pushBoolean("Slow Turning", slowTurning);
 
     //look for alliance status for 30 seconds after 
     if(runTimer.get() < 30) {
@@ -495,6 +494,7 @@ public class Robot extends TimedRobot {
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
+    telemetry.closeSession();
     myLightOption = LightOption.disabled;
   }
 
@@ -504,6 +504,8 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    telemetry.closeSession();
+    telemetry.openSession("autonomous");
     //Set rotate, lift and slide to 0
     armRotator.setSelectedSensorPosition(0);
     armMotor.setSelectedSensorPosition(0);
@@ -946,6 +948,10 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+
+    telemetry.closeSession();
+    telemetry.openSession("teleop");
+
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
@@ -969,10 +975,11 @@ public class Robot extends TimedRobot {
     leftDrive1.setSelectedSensorPosition(0);
     rightDrive1.setSelectedSensorPosition(0);
 
-    SmartDashboard.putBoolean("WheelieProtectionSticky", false);
+    telemetry.pushBoolean("WheelieProtectionSticky", false);
 
     myLightOption = LightOption.off;
 
+    telemetry.pushEvent("teleopInit");
   }
 
   /** This function is called periodically during operator control. */
@@ -996,6 +1003,10 @@ public class Robot extends TimedRobot {
     else {
       if(driveStick.getRawButtonPressed(14)) {
         targetAngle = calculateAngleToTurn(180);
+        telemetry.pushEvent("driverInitiatedBalance");
+      }
+      if(driveStick.getRawButtonReleased(14)) {
+        telemetry.pushEvent("driverReleasedBalance");
       }
       if (driveStick.getRawButton(14)){
         balanceRobot_DrivingBackward(false);
@@ -1021,6 +1032,7 @@ public class Robot extends TimedRobot {
 
     //gear shifting
     if(driveStick.getRawButtonPressed(10)){
+      telemetry.pushEvent("driverSwitchedGears");
       driveShiftBool = !driveShiftBool;
 
       leftDrive1.configClosedloopRamp(driveShiftBool? 0.5:0.3);
@@ -1030,6 +1042,7 @@ public class Robot extends TimedRobot {
 
     //Gripper controls
     if(operatorStick.getRawButtonPressed(4)){
+      telemetry.pushEvent("operatorToggledGripper");
       gripperBool = !gripperBool;
     }
     gripperSolenoid.set(gripperBool);
@@ -1041,22 +1054,27 @@ public class Robot extends TimedRobot {
     }
     //Shooter wheel control
     if(driveStick.getRawButton(3)){ //out
+      telemetry.pushString("wheelMode", "out");
       shooter();
       armWheelsOn = false;
-     }else if(driveStick.getRawButton(4)){ //in a lot
-      armWheels.set(ControlMode.PercentOutput, 0.8);
-      armWheelsOn = false;
-     }else if(driveStick.getRawButton(1)){ //in a little bit
+    } else if(driveStick.getRawButton(4)) { //in a lot
+        telemetry.pushString("wheelMode", "inFast");
+        armWheels.set(ControlMode.PercentOutput, 0.8);
+        armWheelsOn = false;
+    } else if(driveStick.getRawButton(1)) { //in a little bit
+        telemetry.pushString("wheelMode", "inSlow");
         armWheels.set(ControlMode.PercentOutput, 0.25);
         armWheelsOn = true;
-     }else{
+    } else {
       if (armWheelsOn){
+        telemetry.pushString("wheelMode", "bias");
         armWheels.set(ControlMode.PercentOutput, 0.25);
       }
-        else{
-          armWheels.set(ControlMode.PercentOutput, 0);
-        }
+      else{
+        telemetry.pushString("wheelMode", "idle");
+        armWheels.set(ControlMode.PercentOutput, 0);
       }
+    }
 
     //Set lift, rotator and extender values to 0
     if (operatorStick.getRawButtonReleased(10)){
@@ -1064,6 +1082,7 @@ public class Robot extends TimedRobot {
       armRotator.setSelectedSensorPosition(0);
       liftMotor.setSelectedSensorPosition(0);
       armAutoPosition = 0;
+      telemetry.pushEvent("operatorZeroedArm");
     }
 
     if (manualMode){
@@ -1119,6 +1138,7 @@ public class Robot extends TimedRobot {
 
   //drive backwards balancing 
   public void balanceRobot_DrivingBackward(boolean halfSpeed){
+    telemetry.pushString("driveMode", "balance");
     double curPitch = Math.sin(Math.toRadians(navX.getPitch()));
     double p = 2;
 
@@ -1208,6 +1228,7 @@ public class Robot extends TimedRobot {
 
   //Set brake mode for the drives
   public void setBrakeMode(boolean brake){
+    telemetry.pushEvent("changeDriveBrakeMode");
     if (brake){
       leftDrive1.setNeutralMode(NeutralMode.Brake);
       leftDrive2.setNeutralMode(NeutralMode.Brake);
@@ -1258,7 +1279,7 @@ public class Robot extends TimedRobot {
     demand = (demand > maxSpeed)? maxSpeed : demand;
     demand = (demand < -maxSpeed)? -maxSpeed : demand;
 
-    SmartDashboard.putNumber("yaw target velocity", demand);
+    telemetry.pushDouble("yaw target velocity", demand);
 
     leftDrive1.set(ControlMode.Velocity, demand);
     rightDrive1.set(ControlMode.Velocity, -demand);
@@ -1307,6 +1328,7 @@ public class Robot extends TimedRobot {
 
   //Driving with Velocity
   public void driveButBetter(){
+    telemetry.pushString("driveMode", "stick");
     double x;
     double y;
     double maxY = 1;
@@ -1339,14 +1361,14 @@ public class Robot extends TimedRobot {
 
     //y *= 1 - (navX.getPitch() * 0.1);
 
-    SmartDashboard.putNumber("DriveX", x);
-    SmartDashboard.putNumber("DriveY", y);
+    telemetry.pushDouble("DriveX", x);
+    telemetry.pushDouble("DriveY", y);
 
-    SmartDashboard.putBoolean("WheelieProtection", false);
+    telemetry.pushBoolean("WheelieProtection", false);
 
     /*if(Math.abs(navX.getPitch()) > 2.0 && driveShiftBool) {
-      SmartDashboard.putBoolean("WheelieProtectionSticky", true);
-      SmartDashboard.putBoolean("WheelieProtection", true);
+      telemetry.pushBoolean("WheelieProtectionSticky", true);
+      telemetry.pushBoolean("WheelieProtection", true);
       //leftDrive1.set(ControlMode.Disabled, 0);
       //rightDrive1.set(ControlMode.Disabled, 0);
     }
@@ -1358,8 +1380,8 @@ public class Robot extends TimedRobot {
       rightDrive1.set(ControlMode.Velocity, (y - x)*goal);
     }
 
-    SmartDashboard.putNumber("LeftDriveTargetVelocity", (y + x)*goal);
-    SmartDashboard.putNumber("RightDriveTargetVelocity", (y - x)*goal); 
+    telemetry.pushDouble("LeftDriveTargetVelocity", (y + x)*goal);
+    telemetry.pushDouble("RightDriveTargetVelocity", (y - x)*goal); 
   }
 
   //Arm wheels on gripper
