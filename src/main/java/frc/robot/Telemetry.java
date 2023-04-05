@@ -77,6 +77,10 @@ public class Telemetry {
         numFramesTotal = 0;
     }
 
+    public void setFrequency(int frequency) {
+        this.frequency = frequency;
+    }
+
     public void pushDouble(String key, double value) {
         registerKey(key);
         SmartDashboard.putNumber(key, value);
