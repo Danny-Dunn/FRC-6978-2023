@@ -114,6 +114,7 @@ public class Telemetry {
     }
 
     public void openFrame() {
+        if(!sessionOpen) return;
         if(frameOpen) System.out.println("WARNING: telemetry frame already open");
         frameOpenTS = System.nanoTime();
         currentFrame.clear();
