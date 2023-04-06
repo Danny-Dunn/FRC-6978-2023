@@ -711,7 +711,7 @@ public class Robot extends TimedRobot {
           if (liftAllowedToRun) liftMotor.set(ControlMode.Position, armLiftPositions[7]);
         }
         
-        if (autoDriveToPositionVelocityDrive(320000, 8000, 13000, 0.0001)){
+        if (autoDriveToPositionVelocityDrive(320000, 8000, 9000, 0.0001)){
           autoStep++;
         }
         break;
