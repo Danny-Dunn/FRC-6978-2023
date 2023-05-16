@@ -29,7 +29,8 @@ public class Telemetry {
     int frequency = 1;
     short numRegisteredKeys;
 
-    boolean frameOpen, sessionOpen;
+    boolean frameOpen = false; 
+    boolean sessionOpen = false;
 
     public void openSession(String name, int frequency) {
         String eventName = NetworkTableInstance.getDefault().getTable("FMSInfo").getEntry("EventName").getString("UnknownEvent");
@@ -127,58 +128,58 @@ public class Telemetry {
         if(file == null) return;
         long saveStartTS = System.nanoTime();
 
-        if(numFramesTotal % frequency != 0)
+        if(numFramesTotal % frequency == 0) {
 
-        try {
-            if(numFramesSaved < 1) {
-                file.write("{");
-            } else {
-                file.write(",{");
-            }
-
-            for(Entry<String, Object> entry : currentFrame.entrySet()) {
-                file.write("\"" + (String)entry.getKey() + "\": ");
-                Object value = entry.getValue();
-                if(
-                    value.getClass().equals(Double.class) || 
-                    value.getClass().equals(Boolean.class)
-                ){
-                    file.write(value.toString() + ",");
+            try {
+                if(numFramesSaved < 1) {
+                    file.write("{");
                 } else {
-                    file.write("\"" + value.toString() + "\",");
+                    file.write(",{");
                 }
-            }
 
-            file.write("\"events\": [");
-            boolean firstEntry = true;
-            for(Entry<String, Long> entry : events.entrySet()) {
-                if(firstEntry) {
-                    firstEntry = false;
-                } else {
-                    file.write(",");
+                for(Entry<String, Object> entry : currentFrame.entrySet()) {
+                    file.write("\"" + (String)entry.getKey() + "\": ");
+                    Object value = entry.getValue();
+                    if(
+                        value.getClass().equals(Double.class) || 
+                        value.getClass().equals(Boolean.class)
+                    ){
+                        file.write(value.toString() + ",");
+                    } else {
+                        file.write("\"" + value.toString() + "\",");
+                    }
                 }
-                file.write("{\"" + (String)entry.getKey() + "\": ");
-                file.write(entry.getValue().toString() + "}");
-            }
 
-            file.write("],");
+                file.write("\"events\": [");
+                boolean firstEntry = true;
+                for(Entry<String, Long> entry : events.entrySet()) {
+                    if(firstEntry) {
+                        firstEntry = false;
+                    } else {
+                        file.write(",");
+                    }
+                    file.write("{\"" + (String)entry.getKey() + "\": ");
+                    file.write(entry.getValue().toString() + "}");
+                }
+                events.clear();
 
-            file.write("\"lastDuration\": " + ((Long)lastFrameSaveDuration).toString() + ",");
-            file.write("\"frameOpenTS\": " + ((Long)frameOpenTS).toString() + ",");
-            file.write("\"frameCloseTS\": " + ((Long)saveStartTS).toString());
-            
-            file.write("}");
-            file.flush();
-            numFramesSaved++;
-        } catch (IOException e){
-            System.out.println("Encountered IOException while trying to write telemetry: " + e.toString());
-        } 
+                file.write("],");
 
-        clear:
+                file.write("\"lastDuration\": " + ((Long)lastFrameSaveDuration).toString() + ",");
+                file.write("\"frameOpenTS\": " + ((Long)frameOpenTS).toString() + ",");
+                file.write("\"frameCloseTS\": " + ((Long)saveStartTS).toString());
+                
+                file.write("}");
+                file.flush();
+                numFramesSaved++;
+            } catch (IOException e){
+                System.out.println("Encountered IOException while trying to write telemetry: " + e.toString());
+            } 
+        }
 
         lastFrameSaveDuration = System.nanoTime() - saveStartTS;
         currentFrame.clear();
-        events.clear();
+        
         frameOpen = false;
         newlyRegisteredKeys.clear();
         
