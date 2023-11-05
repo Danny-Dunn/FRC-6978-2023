@@ -34,7 +34,8 @@ public class Robot extends TimedRobot {
     balance,
     cube,
     cone,
-    disabled
+    disabled,
+    sneaky_snitch
   };
 
   LightOption myLightOption;
@@ -130,7 +131,7 @@ public class Robot extends TimedRobot {
   double armSlideGoalIncrement = 0.10;
   double liftGoalIncrement = 0.10;
   
-  //lift pid 
+  //lift pid
   double time;
   double power;
   double shooterFlag;
@@ -139,7 +140,6 @@ public class Robot extends TimedRobot {
   private double liftP;
   private double liftI;
   private double liftD;
-  private double liftSetpointPos;
 
   //safety
   double safetyTimerLift = 0;
@@ -327,9 +327,10 @@ public class Robot extends TimedRobot {
 
     switch(myLightOption){
       case disabled:
+        
         if(redAlliance) {
-          canifier.setLEDOutput(0, LEDChannel.LEDChannelA); //green
-          canifier.setLEDOutput(1, LEDChannel.LEDChannelB); //red
+          canifier.setLEDOutput(1, LEDChannel.LEDChannelA); //green
+          canifier.setLEDOutput(0, LEDChannel.LEDChannelB); //red
           canifier.setLEDOutput(0, LEDChannel.LEDChannelC); //blue
         } else {
           canifier.setLEDOutput(0, LEDChannel.LEDChannelA); //green
@@ -397,6 +398,22 @@ public class Robot extends TimedRobot {
           canifier.setLEDOutput(0, LEDChannel.LEDChannelC); //blue
         }
       break;
+      case sneaky_snitch:
+      intensity = 1;
+      if (G == 0 && timer.get() >= timeBetweenLightChangesFlag){
+        timeBetweenLightChangesFlag = timer.get() + timeBetweenLightChanges;
+        G = 1;
+        canifier.setLEDOutput(0, LEDChannel.LEDChannelA); //green
+        canifier.setLEDOutput(1 * intensity, LEDChannel.LEDChannelB); //red
+        canifier.setLEDOutput(1 * intensity, LEDChannel.LEDChannelC); //blue
+      }else if (G == 1 && timer.get() >= timeBetweenLightChangesFlag){
+        G = 0;
+        timeBetweenLightChangesFlag = timer.get() + timeBetweenLightChanges;
+        canifier.setLEDOutput(0, LEDChannel.LEDChannelA); //green
+        canifier.setLEDOutput(0, LEDChannel.LEDChannelB); //red
+        canifier.setLEDOutput(0, LEDChannel.LEDChannelC); //blue
+      }
+    break;
     }
 
     if (operatorStick.getPOV() == 270){
@@ -408,7 +425,7 @@ public class Robot extends TimedRobot {
       flashLights = true;
     } 
     else if (driveStick.getRawButton(13)){
-      myLightOption = LightOption.weewoo;
+      myLightOption = LightOption.sneaky_snitch;
     } 
     else if (driveStick.getRawButton(14)){
       myLightOption = LightOption.balance;
@@ -421,7 +438,7 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
 
     //telemetry.pushDouble("shooter runtime", 2); :)
-    power = SmartDashboard.getNumber("shooter power (0-1)", 0.3);
+    power = SmartDashboard.getNumber("shooter power (0-1)", 1);
     time = SmartDashboard.getNumber("shooter runtime", 2);
 
     angleP = SmartDashboard.getNumber("angleP", 0.00001);
@@ -957,7 +974,6 @@ public class Robot extends TimedRobot {
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
-    double armP = SmartDashboard.getNumber("ArmP", 0);
 
     //armMotor.config_kP(0, 0.02);
     //armMotor.config_kD(0, 0);
@@ -1078,7 +1094,7 @@ public class Robot extends TimedRobot {
     }
 
     //Set lift, rotator and extender values to 0
-    if (operatorStick.getRawButtonReleased(10)){
+    if (operatorStick.getRawButtonReleased(10) && manualMode){
       armMotor.setSelectedSensorPosition(0);
       armRotator.setSelectedSensorPosition(0);
       liftMotor.setSelectedSensorPosition(0);
@@ -1099,10 +1115,10 @@ public class Robot extends TimedRobot {
       }
       
       //Move lift up or down using right stick
-      liftMotor.set(ControlMode.PercentOutput, -operatorStick.getRawAxis(3)/2);
+      liftMotor.set(ControlMode.PercentOutput, -operatorStick.getRawAxis(3)*0.3);
 
       //Move rotator up or down using the left stick
-      armRotator.set(ControlMode.PercentOutput, -Math.pow(operatorStick.getRawAxis(1), 3));
+      armRotator.set(ControlMode.PercentOutput, -(operatorStick.getRawAxis(1)*0.3));
     }
     else{ //not in manual mode
       //Arm, lift and extender positions
@@ -1124,9 +1140,9 @@ public class Robot extends TimedRobot {
         else if(operatorStick.getPOV() == 180){
           armAutoPosition = 5; // partial park
         } else if (operatorStick.getRawButton(3)) {
-          armAutoPosition = 6; // floor pickup
+          armAutoPosition = 6; // station pickup
         } else if (operatorStick.getRawButton(2)) {
-          armAutoPosition = 7; // station pickup
+          armAutoPosition = 7; // floor pickup
         }
       }
 
@@ -1339,7 +1355,7 @@ public class Robot extends TimedRobot {
       goal = 12500;
     }
 
-    double xdivisor = (slowTurning)? 6 : 3;
+    double xdivisor = (slowTurning)? 6 : 3.2;
 
     //Negative X for 2023 practice bot, positive X for 2022 comp bot
     x = -driveStick.getRawAxis(0) / xdivisor;
@@ -1388,7 +1404,7 @@ public class Robot extends TimedRobot {
   //Arm wheels on gripper
   public void shooter(){
     if(timer.get() <= shooterFlag){
-      armWheels.set(ControlMode.PercentOutput, -power); 
+      armWheels.set(ControlMode.PercentOutput, -1); 
     }else{
       armWheels.set(ControlMode.PercentOutput, 0);
     }
